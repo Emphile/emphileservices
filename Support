@@ -1,0 +1,21 @@
+from ast import ClassDef
+
+
+ClassDef
+SupportTicket: 
+def __init__(self, customer_name, issue_description):
+        self.customer_name = customer_name
+        self.issue_description = issue_description
+        self.status = "Open"
+
+def resolve_ticket(self):
+        self.status = "Resolved"
+        print(f"Ticket for {self.customer_name} resolved.")
+
+# Example usage:
+# ticket1 = SupportTicket(customer_name="John Doe", issue_description="Cannot log in")
+  print(f"Ticket Status: {ticket1.status}")
+
+ticket1.resolve_ticket()
+
+print(f"Ticket Status: {ticket1.status}")
