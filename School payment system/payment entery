@@ -1,0 +1,22 @@
+// Payment.java
+import javax.persistence.*;
+import java.util.Date;
+
+@Entity
+public class Payment {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Double amount;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date paymentDate;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private Student student;
+
+    // getters and setters
+}

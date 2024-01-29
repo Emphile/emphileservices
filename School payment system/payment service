@@ -1,0 +1,31 @@
+// PaymentService.java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.List;
+
+@Service
+public class PaymentService {
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    public List<Payment> getAllPayments() {
+        return paymentRepository.findAll();
+    }
+
+    public void makePayment(Long studentId, Double amount) {
+        Student student = studentRepository.getById(studentId);
+
+        Payment payment = new Payment();
+        payment.setAmount(amount);
+        payment.setPaymentDate(new Date());
+        payment.setStudent(student);
+
+        paymentRepository.save(payment);
+    }
+}
