@@ -15,7 +15,9 @@
     <p class="muted">Emphile Engineering Services staff only.</p>
     <div class="msg" id="err" hidden></div>
     <div><label for="em">Email</label><input id="em" type="email" required autocomplete="username"></div>
-    <div><label for="pw">Password</label><input id="pw" type="password" required autocomplete="current-password"></div>
+    <div><label for="pw">Password</label>
+      <div style="position:relative"><input id="pw" type="password" required autocomplete="current-password" style="padding-right:76px">
+      <button type="button" id="tg" class="btn sm" aria-controls="pw" aria-pressed="false" style="position:absolute;right:6px;top:50%;transform:translateY(-50%)">Show</button></div></div>
     <button class="btn y" type="submit" style="justify-content:center">Sign in</button>
     <a class="muted" href="../index.html" style="font-size:.85rem">← Back to website</a>
   </form>
@@ -28,6 +30,12 @@
 <script>
   const db = window.EmphileDB, err = document.getElementById('err');
   if (!db || !db.configured) { err.hidden = false; err.textContent = 'Not connected: add the Firebase settings to config.js.'; }
+  document.getElementById('tg').onclick = e => {
+    const pw = document.getElementById('pw'), show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    e.target.textContent = show ? 'Hide' : 'Show';
+    e.target.setAttribute('aria-pressed', show);
+  };
   document.getElementById('lf').onsubmit = async e => {
     e.preventDefault(); if (!db || !db.configured) return;
     try { await db.signIn(document.getElementById('em').value.trim(), document.getElementById('pw').value); location.href = 'index.html'; }
