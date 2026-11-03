@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Dashboard | Emphile Back Office</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="portal.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
+<script src="app.js"></script>
+<script src="resources.js"></script>
+<script>
+(async () => {
+  const E = Emphile, { sb, esc, money } = E;
+  const session = await E.guard(); if (!session) return;
+  const c = E.shell('index.html', 'Dashboard', session);
+  const today = E.todayISO(), soon = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
+  const count = async q => (await q).count || 0;
+  const [newLeads, openJobs, dueSoon, inv, pay] = await Promise.all([
+    count(sb.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'New')),
+    count(sb.from('jobs').select('*', { count: 'exact', head: true }).in('status', ['Scheduled', 'In progress'])),
+    count(sb.from('inspections').select('*', { count: 'exact', head: true }).lte('next_due', soon)),
+    sb.from('invoices').select('*').not('status', 'in', '("Paid","Void","Draft")'),
+    sb.from('payments').select('invoice_id,amount'),
+  ]);
+  const paid = {}; (pay.data || []).forEach(p => paid[p.invoice_id] = (paid[p.invoice_id] || 0) + +p.amount);
+  const owed = (inv.data || []).reduce((s, i) => s + Math.max(0, E.docTotals(i).total - (paid[i.id] || 0)), 0);
+  const s = await E.getSettings();
+  const keys = [['business_name', 'Business name'], ['business_address', 'Business address'], ['vat_number', 'VAT number'], ['payment_details', 'Payment details (shown on invoices)'], ['document_terms', 'Terms (footer of quotes and invoices)']];
+  c.innerHTML = `
+    <div class="cards">
+      <a class="stat" href="crm.html"><b>${newLeads}</b><span>New leads</span></a>
+      <a class="stat" href="jobs.html"><b>${openJobs}</b><span>Jobs scheduled or in progress</span></a>
+      <a class="stat" href="jobs.html"><b>${money(owed)}</b><span>Outstanding invoices</span></a>
+      <a class="stat" href="inspections.html"><b>${dueSoon}</b><span>Inspections due in 60 days or overdue</span></a>
+    </div>
+    <div class="box"><h2>Business details</h2>
+      <p class="muted" style="margin-bottom:16px">Printed on quotes and invoices. Left blank until you fill them in.</p>
+      <form id="sf" class="fgrid">${keys.map(([k, l]) => `<div class="${k === 'business_name' || k === 'vat_number' ? '' : 'full'}"><label for="s_${k}">${l}</label>${k.match(/address|details|terms/) ? `<textarea id="s_${k}">${esc(s[k])}</textarea>` : `<input id="s_${k}" value="${esc(s[k])}">`}</div>`).join('')}
+        <div class="full"><button class="btn y" type="submit">Save details</button> <span id="ok" class="muted"></span></div></form></div>`;
+  document.getElementById('sf').onsubmit = async e => {
+    e.preventDefault();
+    const rows = keys.map(([k]) => ({ key: k, value: document.getElementById('s_' + k).value.trim() }));
+    const { error } = await sb.from('settings').upsert(rows);
+    document.getElementById('ok').textContent = error ? error.message : 'Saved.';
+  };
+})();
+</script>
+</body>
+</html>
