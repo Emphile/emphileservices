@@ -1,7 +1,7 @@
 /* Table definitions for each back-office module */
 (function () {
   const E = window.Emphile;
-  const { sb, esc, money, fdate, todayISO } = E;
+  const { db, esc, money, fdate, todayISO } = E;
 
   const SERVICES = ['Electrical Inspection (EICR)', 'New Installation', 'Industrial Services', 'Energy Efficiency', 'Maintenance & Repair', 'Emergency Call-out', 'Lighting', 'Other'];
   const PROPS = ['Residential', 'Commercial', 'Industrial'];
@@ -33,10 +33,8 @@
     actions: [{
       label: 'To client', run: async (r, api) => {
         if (r.client_id) { alert('Already linked to a client.'); return; }
-        const { data, error } = await sb.from('clients').insert({ name: r.name, type: r.property_type, email: r.email, phone: r.phone, notes: r.message }).select().single();
-        if (error) throw error;
-        const u = await sb.from('leads').update({ client_id: data.id, status: r.status === 'Lost' ? r.status : 'Won' }).eq('id', r.id);
-        if (u.error) throw u.error;
+        const client = await db.add('clients', { name: r.name, type: r.property_type || null, email: r.email || null, phone: r.phone || null, notes: r.message || null });
+        await db.update('leads', r.id, { client_id: client.id, status: r.status === 'Lost' ? r.status : 'Won' });
         api.reload();
       },
     }],
@@ -92,8 +90,7 @@
         label: '→ Invoice', run: async (r) => {
           if (!confirm('Create an invoice from this quote?')) return;
           const number = await E.nextNumber('invoices', 'number', 'INV-');
-          const { error } = await sb.from('invoices').insert({ number, client_id: r.client_id, job_id: r.job_id, items: r.items, vat_rate: r.vat_rate, notes: r.notes, status: 'Draft' });
-          if (error) throw error;
+          await db.add('invoices', { number, client_id: r.client_id || null, job_id: r.job_id || null, issue_date: todayISO(), due_date: null, items: r.items || [], vat_rate: r.vat_rate || 0, notes: r.notes || null, status: 'Draft' });
           alert('Invoice ' + number + ' created (see the Invoices tab).');
         },
       },
@@ -103,7 +100,8 @@
   const I_STATUS = ['Draft', 'Sent', 'Part paid', 'Paid', 'Overdue', 'Void'];
   R.invoices = {
     table: 'invoices', title: 'Invoices', single: 'Invoice', autoNumber: { key: 'number', prefix: 'INV-' }, filter: { key: 'status', label: 'statuses', options: I_STATUS },
-    preload: async () => ({ payments: (await sb.from('payments').select('invoice_id,amount')).data || [] }),
+    preload: async () => ({ payments: await db.list('payments') }),
+    onDelete: async r => { for (const p of await db.list('payments')) if (p.invoice_id === r.id) await db.remove('payments', p.id); },
     columns: [
       ...docColumns, { key: 'due_date', label: 'Due' },
       { key: 'balance', label: 'Balance', render: (r, c) => { const paid = (c.payments || []).filter(p => p.invoice_id === r.id).reduce((s, p) => s + +p.amount, 0); const b = E.docTotals(r).total - paid; return b > 0.004 ? money(b) : '<span class="pill g">Settled</span>'; } },

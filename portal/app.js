@@ -1,7 +1,6 @@
 /* Emphile back office: shared framework (auth guard, layout, generic list/edit engine, print view) */
 (function () {
-  const CFG = window.EMPHILE_CONFIG || {};
-  const sb = CFG.url && CFG.key ? supabase.createClient(CFG.url, CFG.key) : null;
+  const db = window.EmphileDB;
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const money = n => '£' + Number(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -18,19 +17,18 @@
   }
 
   async function guard() {
-    if (!sb) {
-      document.body.innerHTML = '<div class="center"><div class="login"><h1>Not connected</h1><p class="muted">Add your Supabase project URL and publishable key to <b>config.js</b> in the site root, then reload.</p></div></div>';
+    if (!db || !db.configured) {
+      document.body.innerHTML = '<div class="center"><div class="login"><h1>Not connected</h1><p class="muted">Add your Firebase settings to <b>config.js</b> in the site root, then reload.</p></div></div>';
       return null;
     }
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { location.href = 'login.html'; return null; }
-    const { data: p } = await sb.from('profiles').select('is_admin').eq('id', session.user.id).maybeSingle();
-    if (!p || !p.is_admin) {
-      await sb.auth.signOut();
-      notice('No access', 'This login is not marked as an admin. Ask the account owner to enable it.');
+    const user = await db.user();
+    if (!user) { location.href = 'login.html'; return null; }
+    if (!(await db.isAdmin(user.uid))) {
+      await db.signOut();
+      notice('No access', 'This login is not set up as an admin. See SETUP.md, step 5.');
       return null;
     }
-    return session;
+    return { user };
   }
 
   function shell(active, title, session) {
@@ -46,14 +44,14 @@
         </aside>
         <main><div class="top"><h1>${esc(title)}</h1></div><div id="content"></div></main>
       </div>`;
-    document.getElementById('out').onclick = async () => { await sb.auth.signOut(); location.href = 'login.html'; };
+    document.getElementById('out').onclick = async () => { await db.signOut(); location.href = 'login.html'; };
     return document.getElementById('content');
   }
 
   async function nextNumber(table, key, prefix) {
-    const { data } = await sb.from(table).select(key);
+    const data = await db.list(table);
     let max = 0;
-    (data || []).forEach(r => { const m = String(r[key] || '').match(/(\d+)$/); if (m) max = Math.max(max, +m[1]); });
+    data.forEach(r => { const m = String(r[key] || '').match(/(\d+)$/); if (m) max = Math.max(max, +m[1]); });
     return prefix + String(max + 1).padStart(4, '0');
   }
 
@@ -64,8 +62,7 @@
   };
 
   async function getSettings() {
-    const { data } = await sb.from('settings').select('*');
-    const s = {}; (data || []).forEach(r => { s[r.key] = r.value; });
+    const s = {}; (await db.list('settings')).forEach(r => { s[r.id] = r.value; });
     return s;
   }
 
@@ -81,13 +78,12 @@
     };
 
     async function load() {
-      for (const t of [...new Set(lookupFields.map(f => f.lookup.table))]) {
-        const { data } = await sb.from(t).select('*');
-        lookups[t] = data || [];
+      try {
+        for (const t of [...new Set(lookupFields.map(f => f.lookup.table))]) lookups[t] = await db.list(t);
+        rows = await db.list(cfg.table, { order: cfg.order || 'created_at', asc: !!cfg.asc });
+      } catch (error) {
+        el.innerHTML = `<div class="msg">${esc(error.message)} (have the rules in firestore.rules been published?)</div>`; return;
       }
-      const { data, error } = await sb.from(cfg.table).select('*').order(cfg.order || 'created_at', { ascending: !!cfg.asc });
-      if (error) { el.innerHTML = `<div class="msg">${esc(error.message)} (has the SQL in supabase/schema.sql been run?)</div>`; return; }
-      rows = data || [];
       ctx = cfg.preload ? await cfg.preload() : {};
       draw();
     }
@@ -133,8 +129,7 @@
         tr.querySelector('[data-e]').onclick = () => form(r);
         tr.querySelector('[data-d]').onclick = async () => {
           if (!confirm(`Delete this ${cfg.single.toLowerCase()}? This cannot be undone.`)) return;
-          const { error } = await sb.from(cfg.table).delete().eq('id', r.id);
-          if (error) alert(error.message); else load();
+          try { if (cfg.onDelete) await cfg.onDelete(r); await db.remove(cfg.table, r.id); load(); } catch (error) { alert(error.message); }
         };
         tr.querySelectorAll('[data-a]').forEach(b => b.onclick = async () => {
           b.disabled = true;
@@ -198,8 +193,8 @@
           else out[f.key] = node.value.trim() === '' ? null : node.value.trim();
           if (f.required && (out[f.key] === null || out[f.key] === '')) { msg.hidden = false; msg.textContent = f.label + ' is required.'; node.focus(); return; }
         }
-        const res = row ? await sb.from(cfg.table).update(out).eq('id', row.id) : await sb.from(cfg.table).insert(out);
-        if (res.error) { msg.hidden = false; msg.textContent = res.error.message; return; }
+        try { if (row) await db.update(cfg.table, row.id, out); else await db.add(cfg.table, out); }
+        catch (error) { msg.hidden = false; msg.textContent = error.message; return; }
         dlg.close(); dlg.remove(); load();
       };
     }
@@ -241,5 +236,5 @@ ${s.document_terms ? `<p class="m" style="margin-top:24px;font-size:12px">${esc(
     w.document.close();
   }
 
-  window.Emphile = { sb, esc, money, fdate, todayISO, guard, shell, tabs, mountResource, printDoc, nextNumber, docTotals, getSettings };
+  window.Emphile = { db, esc, money, fdate, todayISO, guard, shell, tabs, mountResource, printDoc, nextNumber, docTotals, getSettings };
 })();

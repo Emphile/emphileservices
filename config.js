@@ -1,7 +1,9 @@
-// Supabase connection for the Emphile Engineering Services project.
-// Paste the Project URL and the PUBLISHABLE (anon) key from Supabase > Project Settings > API.
-// Never put the secret / service_role key here.
+// Firebase web app settings for the Emphile Engineering Services project.
+// Firebase console > Project settings > Your apps > Web app > SDK setup and configuration.
+// These values are public identifiers, not secrets: access is protected by firestore.rules.
 window.EMPHILE_CONFIG = {
-  url: '',
-  key: ''
+  apiKey: '',
+  authDomain: '',
+  projectId: '',
+  appId: ''
 };

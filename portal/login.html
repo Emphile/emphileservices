@@ -20,16 +20,18 @@
     <a class="muted" href="../index.html" style="font-size:.85rem">← Back to website</a>
   </form>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="../config.js"></script>
+<script src="../db.js"></script>
 <script>
-  const C = window.EMPHILE_CONFIG || {}, err = document.getElementById('err');
-  const sb = C.url && C.key ? supabase.createClient(C.url, C.key) : null;
-  if (!sb) { err.hidden = false; err.textContent = 'Not connected: add the Supabase URL and key to config.js.'; }
+  const db = window.EmphileDB, err = document.getElementById('err');
+  if (!db || !db.configured) { err.hidden = false; err.textContent = 'Not connected: add the Firebase settings to config.js.'; }
   document.getElementById('lf').onsubmit = async e => {
-    e.preventDefault(); if (!sb) return;
-    const { error } = await sb.auth.signInWithPassword({ email: document.getElementById('em').value.trim(), password: document.getElementById('pw').value });
-    if (error) { err.hidden = false; err.textContent = error.message; } else location.href = 'index.html';
+    e.preventDefault(); if (!db || !db.configured) return;
+    try { await db.signIn(document.getElementById('em').value.trim(), document.getElementById('pw').value); location.href = 'index.html'; }
+    catch (x) { err.hidden = false; err.textContent = 'Sign in failed. Check your email and password.'; }
   };
 </script>
 </body>

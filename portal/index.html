@@ -10,27 +10,28 @@
 </head>
 <body>
 <div id="app"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="../config.js"></script>
+<script src="../db.js"></script>
 <script src="app.js"></script>
 <script src="resources.js"></script>
 <script>
 (async () => {
-  const E = Emphile, { sb, esc, money } = E;
+  const E = Emphile, { db, esc, money } = E;
   const session = await E.guard(); if (!session) return;
   const c = E.shell('index.html', 'Dashboard', session);
-  const today = E.todayISO(), soon = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
-  const count = async q => (await q).count || 0;
-  const [newLeads, openJobs, dueSoon, inv, pay] = await Promise.all([
-    count(sb.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'New')),
-    count(sb.from('jobs').select('*', { count: 'exact', head: true }).in('status', ['Scheduled', 'In progress'])),
-    count(sb.from('inspections').select('*', { count: 'exact', head: true }).lte('next_due', soon)),
-    sb.from('invoices').select('*').not('status', 'in', '("Paid","Void","Draft")'),
-    sb.from('payments').select('invoice_id,amount'),
+  const soon = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
+  const [leads, jobs, inspections, invoices, payments, s] = await Promise.all([
+    db.list('leads'), db.list('jobs'), db.list('inspections'), db.list('invoices'), db.list('payments'), E.getSettings(),
   ]);
-  const paid = {}; (pay.data || []).forEach(p => paid[p.invoice_id] = (paid[p.invoice_id] || 0) + +p.amount);
-  const owed = (inv.data || []).reduce((s, i) => s + Math.max(0, E.docTotals(i).total - (paid[i.id] || 0)), 0);
-  const s = await E.getSettings();
+  const newLeads = leads.filter(l => l.status === 'New').length;
+  const openJobs = jobs.filter(j => ['Scheduled', 'In progress'].includes(j.status)).length;
+  const dueSoon = inspections.filter(i => i.next_due && i.next_due <= soon).length;
+  const paid = {}; payments.forEach(p => paid[p.invoice_id] = (paid[p.invoice_id] || 0) + +p.amount);
+  const owed = invoices.filter(i => !['Paid', 'Void', 'Draft'].includes(i.status))
+    .reduce((t, i) => t + Math.max(0, E.docTotals(i).total - (paid[i.id] || 0)), 0);
   const keys = [['business_name', 'Business name'], ['business_address', 'Business address'], ['vat_number', 'VAT number'], ['payment_details', 'Payment details (shown on invoices)'], ['document_terms', 'Terms (footer of quotes and invoices)']];
   c.innerHTML = `
     <div class="cards">
@@ -45,9 +46,11 @@
         <div class="full"><button class="btn y" type="submit">Save details</button> <span id="ok" class="muted"></span></div></form></div>`;
   document.getElementById('sf').onsubmit = async e => {
     e.preventDefault();
-    const rows = keys.map(([k]) => ({ key: k, value: document.getElementById('s_' + k).value.trim() }));
-    const { error } = await sb.from('settings').upsert(rows);
-    document.getElementById('ok').textContent = error ? error.message : 'Saved.';
+    const ok = document.getElementById('ok');
+    try {
+      for (const [k] of keys) await db.set('settings', k, { value: document.getElementById('s_' + k).value.trim() });
+      ok.textContent = 'Saved.';
+    } catch (err) { ok.textContent = err.message; }
   };
 })();
 </script>
