@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emphile Engineering Services | Electrical Engineers, Newport, Wales</title>
+<meta name="description" content="Emphile Engineering Services provides electrical inspection (EICR), installation, industrial electrical works, energy efficiency and maintenance across Wales and South West England.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0b0b0c; --panel:#151517; --panel-2:#1b1b1e;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.2);
+    --yellow:#f5c842; --yellow-ink:#141100;
+    --text:#f2efe9; --muted:#a29f98;
+    --r:10px; --max:1160px;
+  }
+  html{scroll-behavior:smooth;scroll-padding-top:76px}
+  body{background:var(--bg);color:var(--text);font:400 16px/1.65 'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  img,svg{display:block;max-width:100%}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+  h1,h2,h3{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;letter-spacing:.02em;line-height:1}
+  .eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--yellow);margin-bottom:14px}
+  h2{font-size:clamp(2.4rem,5vw,3.6rem);margin-bottom:16px}
+  .lead{color:var(--muted);max-width:620px;font-size:1.05rem}
+  section{padding:96px 0}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:var(--r);font-weight:700;font-size:.95rem;border:1.5px solid transparent;cursor:pointer;transition:transform .15s,background .15s,border-color .15s;font-family:inherit}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-y{background:var(--yellow);color:var(--yellow-ink)}
+  .btn-y:hover{background:#ffd860}
+  .btn-o{border-color:var(--line-2);color:var(--text)}
+  .btn-o:hover{border-color:var(--yellow);color:var(--yellow)}
+  :focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+
+  /* Nav */
+  header{position:fixed;inset:0 0 auto 0;z-index:50;background:rgba(11,11,12,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .logo{display:flex;align-items:center;gap:12px;font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.06em}
+  .logo i{font-style:normal;width:36px;height:36px;border-radius:8px;background:var(--yellow);color:var(--yellow-ink);display:grid;place-items:center;font-size:1.2rem}
+  .logo small{display:block;font:500 .62rem 'DM Sans';letter-spacing:.2em;color:var(--muted);margin-top:-2px}
+  nav ul{display:flex;gap:30px;list-style:none;align-items:center}
+  nav a.l{font-size:.9rem;color:var(--muted);transition:color .15s}
+  nav a.l:hover{color:var(--text)}
+  .nav .btn{padding:10px 18px;font-size:.85rem}
+  .burger{display:none;background:none;border:1px solid var(--line-2);color:var(--text);width:42px;height:42px;border-radius:8px;font-size:1.2rem;cursor:pointer}
+
+  /* Hero */
+  .hero{padding:168px 0 96px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(900px 480px at 85% 10%,rgba(245,200,66,.13),transparent 60%),
+      linear-gradient(var(--line) 1px,transparent 1px) 0 0/64px 64px,
+      linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/64px 64px,var(--bg)}
+  .hero .wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:56px;align-items:center}
+  .badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-2);border-radius:99px;padding:6px 14px;font-size:.78rem;color:var(--muted);margin-bottom:26px}
+  .badge b{width:8px;height:8px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 4px rgba(245,200,66,.2)}
+  h1{font-size:clamp(3.4rem,8.5vw,7rem);margin-bottom:24px}
+  h1 span{color:var(--yellow)}
+  .hero p.lead{margin-bottom:36px;font-size:1.12rem}
+  .cta{display:flex;gap:14px;flex-wrap:wrap}
+  .card-hero{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px}
+  .card-hero h3{font-size:1.5rem;margin-bottom:18px;color:var(--yellow)}
+  .card-hero li{list-style:none;display:flex;gap:12px;padding:13px 0;border-top:1px solid var(--line);font-size:.95rem}
+  .card-hero li:first-of-type{border-top:0}
+  .card-hero svg{flex:none;width:20px;height:20px;color:var(--yellow);margin-top:3px}
+  .card-hero small{display:block;color:var(--muted);font-size:.78rem}
+
+  /* Services */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
+  .svc{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:30px;transition:border-color .2s,transform .2s}
+  .svc:hover{border-color:var(--yellow);transform:translateY(-4px)}
+  .svc .ic{width:46px;height:46px;border-radius:10px;background:rgba(245,200,66,.12);display:grid;place-items:center;color:var(--yellow);margin-bottom:20px}
+  .svc .ic svg{width:24px;height:24px}
+  .svc h3{font-size:1.6rem;margin-bottom:10px}
+  .svc p{color:var(--muted);font-size:.95rem}
+
+  /* About */
+  .about{background:var(--panel)}
+  .about .wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  .about p{color:var(--muted);margin-bottom:18px}
+  .about p strong{color:var(--text);font-weight:500}
+  .checks{list-style:none;margin-top:24px;display:grid;gap:12px}
+  .checks li{display:flex;gap:12px;align-items:flex-start}
+  .checks svg{flex:none;width:20px;height:20px;color:var(--yellow);margin-top:4px}
+  .facts{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:8px 28px}
+  .facts div{padding:20px 0;border-top:1px solid var(--line)}
+  .facts div:first-child{border-top:0}
+  .facts dt{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow);font-weight:700;margin-bottom:4px}
+  .facts dd{font-size:1.02rem}
+
+  /* Process */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px;counter-reset:s}
+  .step{border-top:2px solid var(--line-2);padding-top:22px;counter-increment:s;transition:border-color .2s}
+  .step:hover{border-color:var(--yellow)}
+  .step::before{content:"0" counter(s);font-family:'Bebas Neue';font-size:2.6rem;color:var(--yellow);display:block;margin-bottom:6px}
+  .step h3{font-size:1.4rem;margin-bottom:8px}
+  .step p{color:var(--muted);font-size:.93rem}
+
+  /* Emergency band */
+  .band{background:var(--yellow);color:var(--yellow-ink);padding:56px 0}
+  .band .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .band h2{margin:0;font-size:clamp(2rem,4vw,3rem)}
+  .band p{font-weight:500;margin-top:6px}
+  .band .btn{background:var(--yellow-ink);color:var(--yellow);font-size:1.05rem}
+
+  /* Contact */
+  .contact .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px}
+  .ci{margin-top:32px;display:grid;gap:22px}
+  .ci a,.ci div{display:flex;gap:16px;align-items:flex-start}
+  .ci .ic{flex:none;width:44px;height:44px;border-radius:10px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;color:var(--yellow)}
+  .ci .ic svg{width:20px;height:20px}
+  .ci small{display:block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .ci a:hover b{color:var(--yellow)}
+  form{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .f{display:grid;gap:6px}.f.full{grid-column:1/-1}
+  label{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;color:var(--text);padding:12px 14px;font:inherit;font-size:.95rem}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow)}
+  textarea{min-height:110px;resize:vertical}
+  form .btn{grid-column:1/-1;justify-content:center}
+  .note{grid-column:1/-1;font-size:.8rem;color:var(--muted)}
+
+  footer{border-top:1px solid var(--line);padding:56px 0 32px;background:var(--panel)}
+  .fg{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;margin-bottom:40px}
+  footer h4{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:14px}
+  footer li{list-style:none;margin-bottom:8px;font-size:.92rem;color:var(--muted)}
+  footer li a:hover{color:var(--text)}
+  footer p{color:var(--muted);font-size:.92rem;max-width:340px;margin-top:14px}
+  .copy{border-top:1px solid var(--line);padding-top:24px;font-size:.8rem;color:var(--muted)}
+
+  .rv{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}
+  .rv.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+  @media(max-width:960px){
+    .hero .wrap,.about .wrap,.contact .wrap{grid-template-columns:1fr;gap:40px}
+    .grid{grid-template-columns:1fr 1fr}
+    .steps{grid-template-columns:1fr 1fr}
+    .fg{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:720px){
+    section{padding:72px 0}
+    .burger{display:block}
+    nav ul{position:absolute;top:68px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--line);flex-direction:column;align-items:stretch;gap:0;padding:8px 24px 20px;display:none}
+    nav ul.open{display:flex}
+    nav ul li{padding:12px 0;border-bottom:1px solid var(--line)}
+    nav ul li:last-child{border:0;padding-top:16px}
+    .hero{padding-top:128px}
+    .grid,.steps,.fg{grid-template-columns:1fr}
+    form{grid-template-columns:1fr;padding:22px}
+    .band .btn{width:100%;justify-content:center}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12l2 2 4-4"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/></symbol>
+    <symbol id="i-factory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l6 4V10l6 4V6h6v15zM7 17h2M12 17h2M17 17h2"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19C5 9 11 4 20 4c0 9-5 15-15 15zM5 19l8-8"/></symbol>
+    <symbol id="i-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5L21 13l-8 8a2.1 2.1 0 0 1-3-3l8-8zM14.7 6.3 12 9"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6 7-12a7 7 0 0 0-14 0c0 6 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></symbol>
+  </defs>
+</svg>
+
+<header>
+  <div class="wrap nav">
+    <a href="#top" class="logo" aria-label="Emphile Engineering Services home">
+      <i>E</i><span>EMPHILE<small>ENGINEERING SERVICES</small></span>
+    </a>
+    <button class="burger" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <nav aria-label="Main">
+      <ul>
+        <li><a class="l" href="#services">Services</a></li>
+        <li><a class="l" href="#about">About</a></li>
+        <li><a class="l" href="#process">Process</a></li>
+        <li><a class="l" href="#contact">Contact</a></li>
+        <li><a class="btn btn-y" href="#contact">Book an inspection</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="badge"><b></b> Newport, Wales · Serving Wales &amp; South West England</div>
+        <h1>Power your world <span>safely.</span></h1>
+        <p class="lead">Electrical inspection, installation and maintenance for commercial, residential and industrial clients, carried out to BS&nbsp;7671 and fully certified on completion.</p>
+        <div class="cta">
+          <a class="btn btn-y" href="#contact">Book an inspection →</a>
+          <a class="btn btn-o" href="tel:+447979643104">Call 07979 643 104</a>
+        </div>
+      </div>
+      <aside class="card-hero" aria-label="At a glance">
+        <h3>At a glance</h3>
+        <ul>
+          <li><svg><use href="#i-clip"/></svg><span>Certified work<small>Full electrical certificates on sign-off</small></span></li>
+          <li><svg><use href="#i-clock"/></svg><span>Quick response<small>Enquiries answered within 2 hours in business hours</small></span></li>
+          <li><svg><use href="#i-bolt"/></svg><span>Emergency call-outs<small>Available 24/7</small></span></li>
+          <li><svg><use href="#i-check"/></svg><span>Free site survey<small>No-obligation quote for new enquiries</small></span></li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <section id="services">
+    <div class="wrap">
+      <p class="eyebrow">What we do</p>
+      <h2>Electrical services for every sector</h2>
+      <p class="lead">From a single-property inspection to a full industrial installation, delivered on time and to a high safety standard.</p>
+      <div class="grid">
+        <article class="svc rv"><div class="ic"><svg><use href="#i-clip"/></svg></div><h3>Electrical Inspection</h3><p>EICR condition reports for domestic and commercial properties. Find faults before they become hazards.</p></article>
+        <article class="svc rv"><div class="ic"><svg><use href="#i-plug"/></svg></div><h3>Installation &amp; Design</h3><p>Electrical design and installation for new builds, renovations, rewires and commercial fit-outs.</p></article>
+        <article class="svc rv"><div class="ic"><svg><use href="#i-factory"/></svg></div><h3>Industrial Services</h3><p>Three-phase power, motor controls, switchgear and factory-floor electrical solutions.</p></article>
+        <article class="svc rv"><div class="ic"><svg><use href="#i-leaf"/></svg></div><h3>Energy Efficiency</h3><p>Energy audits, LED retrofits and smart controls to help reduce your utility bills.</p></article>
+        <article class="svc rv"><div class="ic"><svg><use href="#i-wrench"/></svg></div><h3>Maintenance &amp; Repair</h3><p>Planned preventive maintenance and emergency breakdown support, around the clock.</p></article>
+        <article class="svc rv"><div class="ic"><svg><use href="#i-bulb"/></svg></div><h3>Lighting</h3><p>Commercial and industrial lighting design, controls, automation and emergency lighting systems.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="about">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">About Emphile</p>
+        <h2>Built on expertise and integrity</h2>
+        <p><strong>Emphile Engineering Services Ltd</strong> is a Newport-based electrical engineering company serving commercial, residential and industrial clients across Wales and the UK.</p>
+        <p>Great work starts with understanding exactly what a client needs. We listen first, survey properly, quote clearly and document everything we do.</p>
+        <ul class="checks">
+          <li><svg><use href="#i-check"/></svg>Work completed to BS&nbsp;7671 standards</li>
+          <li><svg><use href="#i-check"/></svg>Clear, no-obligation quotes</li>
+          <li><svg><use href="#i-check"/></svg>Full certification and compliance records</li>
+        </ul>
+      </div>
+      <dl class="facts rv">
+        <div><dt>Location</dt><dd>4 Market Street, Newport, Wales, UK</dd></div>
+        <div><dt>Coverage</dt><dd>Wales &amp; South West England</dd></div>
+        <div><dt>Hours</dt><dd>Mon–Fri 8am–6pm · Emergency 24/7</dd></div>
+        <div><dt>Sectors</dt><dd>Commercial · Residential · Industrial</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="process">
+    <div class="wrap">
+      <p class="eyebrow">How it works</p>
+      <h2>From enquiry to completion</h2>
+      <div class="steps">
+        <div class="step rv"><h3>Get in touch</h3><p>Call, email or use the form. Tell us about your project and we'll respond within 2 hours in business hours.</p></div>
+        <div class="step rv"><h3>Site survey</h3><p>An engineer assesses the scope, flags any issues and provides a detailed, no-obligation quote.</p></div>
+        <div class="step rv"><h3>Works carried out</h3><p>Certified engineers complete the work to BS&nbsp;7671 with minimal disruption to your day.</p></div>
+        <div class="step rv"><h3>Certification</h3><p>All work is documented and signed off, with electrical certificates for your compliance records.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="band">
+    <div class="wrap">
+      <div><h2>Need an emergency electrician?</h2><p>We're available 24/7 for breakdowns and urgent faults.</p></div>
+      <a class="btn" href="tel:+447979643104">Call 07979 643 104 →</a>
+    </div>
+  </div>
+
+  <section id="contact" class="contact">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Get started</p>
+        <h2>Book an inspection</h2>
+        <p class="lead">Send us a few details and an engineer will get back to you to confirm your appointment. Surveys are free and without obligation for new enquiries.</p>
+        <div class="ci">
+          <a href="tel:+447979643104"><span class="ic"><svg><use href="#i-phone"/></svg></span><span><small>Phone</small><b>07979 643 104</b></span></a>
+          <a href="mailto:info@emphileengineeringservices.co.uk"><span class="ic"><svg><use href="#i-mail"/></svg></span><span><small>Email</small><b>info@emphileengineeringservices.co.uk</b></span></a>
+          <div><span class="ic"><svg><use href="#i-pin"/></svg></span><span><small>Address</small><b>4 Market Street, Newport, Wales, UK</b></span></div>
+          <div><span class="ic"><svg><use href="#i-clock"/></svg></span><span><small>Hours</small><b>Mon–Fri 8am–6pm · Emergency 24/7</b></span></div>
+        </div>
+      </div>
+      <form id="enquiry">
+        <div class="f"><label for="fn">First name</label><input id="fn" name="fn" required autocomplete="given-name"></div>
+        <div class="f"><label for="ln">Last name</label><input id="ln" name="ln" required autocomplete="family-name"></div>
+        <div class="f"><label for="em">Email</label><input id="em" name="em" type="email" required autocomplete="email"></div>
+        <div class="f"><label for="ph">Phone</label><input id="ph" name="ph" type="tel" autocomplete="tel"></div>
+        <div class="f"><label for="sv">Service required</label>
+          <select id="sv" name="sv" required><option value="">Select a service</option><option>Electrical Inspection (EICR)</option><option>New Installation</option><option>Industrial Services</option><option>Energy Efficiency</option><option>Maintenance &amp; Repair</option><option>Emergency Call-out</option><option>Other</option></select></div>
+        <div class="f"><label for="pt">Property type</label>
+          <select id="pt" name="pt"><option value="">Select type</option><option>Residential</option><option>Commercial</option><option>Industrial</option></select></div>
+        <div class="f full"><label for="msg">Additional details</label><textarea id="msg" name="msg"></textarea></div>
+        <button class="btn btn-y" type="submit">Send enquiry →</button>
+        <p class="note">This opens your email app with the enquiry ready to send to us.</p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fg">
+      <div>
+        <a href="#top" class="logo"><i>E</i><span>EMPHILE<small>ENGINEERING SERVICES</small></span></a>
+        <p>Electrical engineering for commercial, industrial and residential clients across Wales and the UK.</p>
+      </div>
+      <div><h4>Services</h4><ul>
+        <li><a href="#services">Electrical Inspection</a></li><li><a href="#services">Installation &amp; Design</a></li><li><a href="#services">Industrial Services</a></li><li><a href="#services">Energy Efficiency</a></li><li><a href="#services">Maintenance &amp; Repair</a></li></ul></div>
+      <div><h4>Contact</h4><ul>
+        <li><a href="tel:+447979643104">07979 643 104</a></li><li><a href="mailto:info@emphileengineeringservices.co.uk">info@emphileengineeringservices.co.uk</a></li><li>4 Market Street, Newport, Wales</li></ul></div>
+    </div>
+    <div class="copy">© <span id="yr">2026</span> Emphile Engineering Services Ltd. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  const burger = document.querySelector('.burger'), menu = document.querySelector('nav ul');
+  burger.addEventListener('click', () => {
+    const open = menu.classList.toggle('open');
+    burger.setAttribute('aria-expanded', open);
+  });
+  menu.addEventListener('click', e => { if (e.target.closest('a')) { menu.classList.remove('open'); burger.setAttribute('aria-expanded', false); } });
+
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+  document.getElementById('enquiry').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = new FormData(e.target), g = k => (f.get(k) || '').toString().trim();
+    const body = [
+      'Name: ' + g('fn') + ' ' + g('ln'),
+      'Email: ' + g('em'),
+      'Phone: ' + g('ph'),
+      'Service: ' + g('sv'),
+      'Property type: ' + g('pt'),
+      '', g('msg')
+    ].join('\n');
+    location.href = 'mailto:info@emphileengineeringservices.co.uk?subject=' +
+      encodeURIComponent('Website enquiry: ' + g('sv')) + '&body=' + encodeURIComponent(body);
+  });
+</script>
+</body>
+</html>
