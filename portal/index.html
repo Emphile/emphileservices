@@ -23,9 +23,15 @@
   const session = await E.guard(); if (!session) return;
   const c = E.shell('index.html', 'Dashboard', session);
   const soon = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
-  const [leads, jobs, inspections, invoices, payments, s] = await Promise.all([
-    db.list('leads'), db.list('jobs'), db.list('inspections'), db.list('invoices'), db.list('payments'), E.getSettings(),
-  ]);
+  let leads, jobs, inspections, invoices, payments, s;
+  try {
+    [leads, jobs, inspections, invoices, payments, s] = await Promise.all([
+      db.list('leads'), db.list('jobs'), db.list('inspections'), db.list('invoices'), db.list('payments'), E.getSettings(),
+    ]);
+  } catch (err) {
+    c.innerHTML = `<div class="msg">Could not load data: ${esc(err.message)}<br>Check that the Firestore database exists and that the rules in firestore.rules are published.</div>`;
+    return;
+  }
   const newLeads = leads.filter(l => l.status === 'New').length;
   const openJobs = jobs.filter(j => ['Scheduled', 'In progress'].includes(j.status)).length;
   const dueSoon = inspections.filter(i => i.next_due && i.next_due <= soon).length;

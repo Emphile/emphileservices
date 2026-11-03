@@ -23,9 +23,13 @@
     }
     const user = await db.user();
     if (!user) { location.href = 'login.html'; return null; }
-    if (!(await db.isAdmin(user.uid))) {
+    const chk = await db.checkAdmin(user.uid);
+    if (!chk.ok) {
       await db.signOut();
-      notice('No access', 'This login is not set up as an admin. See SETUP.md, step 5.');
+      const why = chk.reason === 'missing'
+        ? 'No document was found in the <b>admins</b> collection with this exact ID.'
+        : 'Firestore refused the lookup (' + esc(chk.reason) + '). Check that the database exists and the rules from firestore.rules are published.';
+      notice('No access', `${why}<br><br>Signed in as ${esc(user.email)}.<br>Your User UID is:<br><b style="word-break:break-all;user-select:all">${esc(user.uid)}</b><br><br>In Firestore, the <b>admins</b> document ID must be exactly this, with a field <b>isAdmin</b> = true. See SETUP.md, step 5.`);
       return null;
     }
     return { user };

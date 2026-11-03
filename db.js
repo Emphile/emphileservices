@@ -34,8 +34,12 @@
     user: () => new Promise(res => { const off = auth.onAuthStateChanged(u => { off(); res(u); }); }),
     signIn: (email, password) => auth.signInWithEmailAndPassword(email, password),
     signOut: () => auth.signOut(),
-    async isAdmin(uid) {
-      try { return (await fs.collection('admins').doc(uid).get()).exists; } catch (e) { return false; }
+    // Returns { ok, reason }: reason explains a refusal so the sign-in screen can say why.
+    async checkAdmin(uid) {
+      try {
+        const d = await fs.collection('admins').doc(uid).get();
+        return d.exists ? { ok: true } : { ok: false, reason: 'missing' };
+      } catch (e) { return { ok: false, reason: e.code || e.message }; }
     },
   };
 })();
