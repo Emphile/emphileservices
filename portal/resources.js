@@ -3,7 +3,7 @@
   const E = window.Emphile;
   const { db, esc, money, fdate, todayISO } = E;
 
-  const SERVICES = ['Electrical Inspection (EICR)', 'New Installation', 'Industrial Services', 'Energy Efficiency', 'Maintenance & Repair', 'Emergency Call-out', 'Lighting', 'Other'];
+  const SERVICES = ['Electrical Inspection (EICR)', 'Design', 'Build', 'New Installation', 'Commissioning', 'Industrial Services', 'Energy Efficiency', 'Maintenance & Repair', 'Emergency Call-out', 'Lighting', 'Other'];
   const PROPS = ['Residential', 'Commercial', 'Industrial'];
   const clientLookup = { table: 'clients', label: 'name' };
   const staffLookup = { table: 'staff', label: 'full_name' };
