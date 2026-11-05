@@ -39,7 +39,7 @@
     document.getElementById('app').innerHTML = `
       <div class="layout">
         <aside>
-          <a class="brand" href="index.html"><i>E</i><span>EMPHILE</span></a>
+          <a class="brand" href="index.html" aria-label="Emphile dashboard"><img src="../assets/logo.png" alt="Emphile Engineering Services"></a>
           ${NAV.map(([h, l]) => `<a class="n ${h === active ? 'on' : ''}" href="${h}">${l}</a>`).join('')}
           <div class="sp"></div>
           <a class="n" href="../index.html">View website</a>

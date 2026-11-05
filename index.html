@@ -5,19 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Emphile Engineering Services | Electrical Engineers, Newport, Wales</title>
 <meta name="description" content="Emphile Engineering Services provides electrical inspection (EICR), installation, industrial electrical works, energy efficiency and maintenance across Wales and South West England.">
+<link rel="icon" href="assets/logo.png" type="image/png">
+<meta name="theme-color" content="#176395">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
-    --bg:#0b0b0c; --panel:#151517; --panel-2:#1b1b1e;
-    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.2);
-    --yellow:#f5c842; --yellow-ink:#141100;
-    --text:#f2efe9; --muted:#a29f98;
+    --bg:#ffffff; --panel:#f3f8fc; --panel-2:#e8f1f8;
+    --line:rgba(23,99,149,.14); --line-2:rgba(23,99,149,.32);
+    --yellow:#176395; --yellow-ink:#ffffff; --sky:#68aee1;
+    --text:#0e2a3f; --muted:#4d6a80;
     --r:10px; --max:1160px;
   }
-  html{scroll-behavior:smooth;scroll-padding-top:76px}
+  html{scroll-behavior:smooth;scroll-padding-top:90px}
   body{background:var(--bg);color:var(--text);font:400 16px/1.65 'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
   img,svg{display:block;max-width:100%}
@@ -31,17 +33,17 @@
   .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:var(--r);font-weight:700;font-size:.95rem;border:1.5px solid transparent;cursor:pointer;transition:transform .15s,background .15s,border-color .15s;font-family:inherit}
   .btn:hover{transform:translateY(-2px)}
   .btn-y{background:var(--yellow);color:var(--yellow-ink)}
-  .btn-y:hover{background:#ffd860}
+  .btn-y:hover{background:#1f7ab8}
   .btn-o{border-color:var(--line-2);color:var(--text)}
   .btn-o:hover{border-color:var(--yellow);color:var(--yellow)}
   :focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
 
   /* Nav */
-  header{position:fixed;inset:0 0 auto 0;z-index:50;background:rgba(11,11,12,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
-  .logo{display:flex;align-items:center;gap:12px;font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.06em}
-  .logo i{font-style:normal;width:36px;height:36px;border-radius:8px;background:var(--yellow);color:var(--yellow-ink);display:grid;place-items:center;font-size:1.2rem}
-  .logo small{display:block;font:500 .62rem 'DM Sans';letter-spacing:.2em;color:var(--muted);margin-top:-2px}
+  header{position:fixed;inset:0 0 auto 0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:80px}
+  .logo{display:flex;align-items:center}
+  .logo img{height:66px;width:auto}
+  footer .logo img{height:72px}
   nav ul{display:flex;gap:30px;list-style:none;align-items:center}
   nav a.l{font-size:.9rem;color:var(--muted);transition:color .15s}
   nav a.l:hover{color:var(--text)}
@@ -51,14 +53,14 @@
   /* Hero */
   .hero{padding:168px 0 96px;position:relative;overflow:hidden;
     background:
-      radial-gradient(900px 480px at 85% 10%,rgba(245,200,66,.13),transparent 60%),
+      radial-gradient(900px 480px at 85% 10%,rgba(104,174,225,.28),transparent 60%),
       linear-gradient(var(--line) 1px,transparent 1px) 0 0/64px 64px,
       linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/64px 64px,var(--bg)}
   .hero .wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:56px;align-items:center}
   .badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-2);border-radius:99px;padding:6px 14px;font-size:.78rem;color:var(--muted);margin-bottom:26px}
-  .badge b{width:8px;height:8px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 4px rgba(245,200,66,.2)}
+  .badge b{width:8px;height:8px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 4px rgba(23,99,149,.18)}
   h1{font-size:clamp(3.4rem,8.5vw,7rem);margin-bottom:24px}
-  h1 span{color:var(--yellow)}
+  h1 span{color:var(--sky)}
   .hero p.lead{margin-bottom:36px;font-size:1.12rem}
   .cta{display:flex;gap:14px;flex-wrap:wrap}
   .card-hero{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px}
@@ -72,7 +74,7 @@
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
   .svc{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:30px;transition:border-color .2s,transform .2s}
   .svc:hover{border-color:var(--yellow);transform:translateY(-4px)}
-  .svc .ic{width:46px;height:46px;border-radius:10px;background:rgba(245,200,66,.12);display:grid;place-items:center;color:var(--yellow);margin-bottom:20px}
+  .svc .ic{width:46px;height:46px;border-radius:10px;background:rgba(104,174,225,.22);display:grid;place-items:center;color:var(--yellow);margin-bottom:20px}
   .svc .ic svg{width:24px;height:24px}
   .svc h3{font-size:1.6rem;margin-bottom:10px}
   .svc p{color:var(--muted);font-size:.95rem}
@@ -144,7 +146,7 @@
   @media(max-width:720px){
     section{padding:72px 0}
     .burger{display:block}
-    nav ul{position:absolute;top:68px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--line);flex-direction:column;align-items:stretch;gap:0;padding:8px 24px 20px;display:none}
+    nav ul{position:absolute;top:80px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--line);flex-direction:column;align-items:stretch;gap:0;padding:8px 24px 20px;display:none}
     nav ul.open{display:flex}
     nav ul li{padding:12px 0;border-bottom:1px solid var(--line)}
     nav ul li:last-child{border:0;padding-top:16px}
@@ -177,7 +179,7 @@
 <header>
   <div class="wrap nav">
     <a href="#top" class="logo" aria-label="Emphile Engineering Services home">
-      <i>E</i><span>EMPHILE<small>ENGINEERING SERVICES</small></span>
+      <img src="assets/logo.png" alt="Emphile Engineering Services" width="92" height="66">
     </a>
     <button class="burger" aria-label="Toggle menu" aria-expanded="false">☰</button>
     <nav aria-label="Main">
@@ -308,7 +310,7 @@
   <div class="wrap">
     <div class="fg">
       <div>
-        <a href="#top" class="logo"><i>E</i><span>EMPHILE<small>ENGINEERING SERVICES</small></span></a>
+        <a href="#top" class="logo" aria-label="Emphile Engineering Services home"><img src="assets/logo.png" alt="Emphile Engineering Services" width="101" height="72"></a>
         <p>Electrical engineering for commercial, industrial and residential clients across Wales and the UK.</p>
       </div>
       <div><h4>Services</h4><ul>
