@@ -82,7 +82,7 @@ dialog h2{font-size:1.8rem;margin-bottom:16px}
   .fgrid{grid-template-columns:1fr}
 }
 
-html[data-theme=light]{--bg:#f2f6fb;--panel:#ffffff;--panel2:#e8f0f9;--line:rgba(6,25,58,.12);--line2:rgba(6,25,58,.28);--y:#0064cd;--yi:#ffffff;--text:#06193a;--muted:#52688a;--red:#c62828;--green:#1b7f45}
+html[data-theme=light]{--bg:#ffffff;--panel:#f1f7ff;--panel2:#dfedff;--line:rgba(0,80,200,.16);--line2:rgba(0,80,200,.34);--y:#0a6cf0;--yi:#ffffff;--text:#031230;--muted:#47608a;--red:#d32020;--green:#12803e}
 html[data-theme=light] .msg{background:rgba(198,40,40,.08);border-color:rgba(198,40,40,.35)}
 html[data-theme=light] dialog::backdrop{background:rgba(6,25,58,.45)}
 html[data-theme=navy]{--bg:#04122e;--panel:#0a1f45;--panel2:#10295a;--line:rgba(120,180,255,.18);--line2:rgba(120,180,255,.36);--y:#00e0f5;--yi:#021428;--text:#eaf3ff;--muted:#8fa7cb}
