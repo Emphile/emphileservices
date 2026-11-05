@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Settings | Emphile Back Office</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="portal.css">
+<script src="theme.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="../config.js"></script>
+<script src="../db.js"></script>
+<script src="app.js"></script>
+<script src="resources.js"></script>
+<script>
+(async () => {
+  const E = Emphile, { esc } = E;
+  const session = await E.guard(); if (!session) return;
+  const c = E.shell('settings.html', 'Settings', session);
+  const THEMES = [
+    { id: 'dark', name: 'Dark', note: 'Charcoal with sky blue accents', bg: '#0b0b0c', side: '#151517', accent: '#2fb8ff', line: '#1b1b1e' },
+    { id: 'light', name: 'Light', note: 'White and blue, easy in daylight', bg: '#f2f6fb', side: '#ffffff', accent: '#0064cd', line: '#e8f0f9' },
+    { id: 'navy', name: 'Navy', note: 'Deep blue with bright cyan', bg: '#04122e', side: '#0a1f45', accent: '#00e0f5', line: '#10295a' },
+  ];
+  c.innerHTML = `
+    <div class="box"><h2>Appearance</h2>
+      <p class="muted" style="margin-bottom:16px">Choose how the back office looks. This is remembered on this device and browser.</p>
+      <div class="themes" role="group" aria-label="Theme">
+        ${THEMES.map(t => `<button type="button" class="theme" data-t="${t.id}" aria-pressed="false">
+          <div class="sw" style="background:${t.bg}"><i style="background:${t.side}"></i><span><em style="background:${t.accent}"></em><em style="background:${t.line}"></em><em style="background:${t.line}"></em></span></div>
+          <b>${esc(t.name)}</b><small>${esc(t.note)}</small></button>`).join('')}
+      </div>
+    </div>
+    <div class="box"><h2>Account</h2>
+      <div class="row2"><div><div class="muted" style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase">Signed in as</div><b>${esc(session.user.email)}</b></div>
+      <a class="btn" href="index.html">Business details &amp; invoice terms</a></div>
+    </div>`;
+  const mark = () => c.querySelectorAll('.theme').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === EmphileTheme.get()));
+  c.querySelectorAll('.theme').forEach(b => b.onclick = () => { EmphileTheme.set(b.dataset.t); mark(); });
+  mark();
+})();
+</script>
+</body>
+</html>
