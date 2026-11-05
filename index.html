@@ -277,7 +277,7 @@
         </ul>
       </div>
       <dl class="facts rv">
-        <div><dt>Location</dt><dd>4 Market Street, Newport, Wales, UK</dd></div>
+        <div><dt>Location</dt><dd>160 Argosy Way, Newport, Wales, UK</dd></div>
         <div><dt>Coverage</dt><dd>Wales &amp; South West England</dd></div>
         <div><dt>Hours</dt><dd>Mon–Fri 8am–6pm · Emergency 24/7</dd></div>
         <div><dt>Sectors</dt><dd>Commercial · Residential · Industrial</dd></div>
@@ -313,8 +313,8 @@
         <p class="lead">Send us a few details and an engineer will get back to you to confirm your appointment. Surveys are free and without obligation for new enquiries.</p>
         <div class="ci">
           <a href="tel:+447979643104"><span class="ic"><svg><use href="#i-phone"/></svg></span><span><small>Phone</small><b>07979 643 104</b></span></a>
-          <a href="mailto:info@emphileengineeringservices.co.uk"><span class="ic"><svg><use href="#i-mail"/></svg></span><span><small>Email</small><b>info@emphileengineeringservices.co.uk</b></span></a>
-          <div><span class="ic"><svg><use href="#i-pin"/></svg></span><span><small>Address</small><b>4 Market Street, Newport, Wales, UK</b></span></div>
+          <a href="mailto:Admin@emphileengineeringservices.co.uk"><span class="ic"><svg><use href="#i-mail"/></svg></span><span><small>Email</small><b>Admin@emphileengineeringservices.co.uk</b></span></a>
+          <div><span class="ic"><svg><use href="#i-pin"/></svg></span><span><small>Address</small><b>160 Argosy Way, Newport, Wales, UK</b></span></div>
           <div><span class="ic"><svg><use href="#i-clock"/></svg></span><span><small>Hours</small><b>Mon–Fri 8am–6pm · Emergency 24/7</b></span></div>
         </div>
       </div>
@@ -345,7 +345,7 @@
       <div><h4>Services</h4><ul>
         <li><a href="#lifecycle">Design</a></li><li><a href="#lifecycle">Build</a></li><li><a href="#lifecycle">Installation</a></li><li><a href="#lifecycle">Commissioning</a></li><li><a href="#lifecycle">Maintenance</a></li><li><a href="#services">Electrical Inspection (EICR)</a></li></ul></div>
       <div><h4>Contact</h4><ul>
-        <li><a href="tel:+447979643104">07979 643 104</a></li><li><a href="mailto:info@emphileengineeringservices.co.uk">info@emphileengineeringservices.co.uk</a></li><li>4 Market Street, Newport, Wales</li></ul></div>
+        <li><a href="tel:+447979643104">07979 643 104</a></li><li><a href="mailto:Admin@emphileengineeringservices.co.uk">Admin@emphileengineeringservices.co.uk</a></li><li>160 Argosy Way, Newport, Wales</li></ul></div>
     </div>
     <div class="copy">© <span id="yr">2026</span> Emphile Engineering Services Ltd. All rights reserved. · <a href="portal/login.html">Staff login</a></div>
   </div>
@@ -377,7 +377,7 @@
     const f = new FormData(form), g = k => (f.get(k) || '').toString().trim();
     const mailto = () => {
       const body = ['Name: ' + g('fn') + ' ' + g('ln'), 'Email: ' + g('em'), 'Phone: ' + g('ph'), 'Service: ' + g('sv'), 'Property type: ' + g('pt'), '', g('msg')].join('\n');
-      location.href = 'mailto:info@emphileengineeringservices.co.uk?subject=' + encodeURIComponent('Website enquiry: ' + g('sv')) + '&body=' + encodeURIComponent(body);
+      location.href = 'mailto:Admin@emphileengineeringservices.co.uk?subject=' + encodeURIComponent('Website enquiry: ' + g('sv')) + '&body=' + encodeURIComponent(body);
     };
     if (!db) { mailto(); return; }
     submitBtn.disabled = true;
