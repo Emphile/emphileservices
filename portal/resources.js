@@ -168,8 +168,10 @@
 
   R.expenses = {
     table: 'expenses', title: 'Expenses', single: 'Expense', order: 'expense_date',
-    columns: [{ key: 'expense_date', label: 'Date' }, { key: 'category', label: 'Category' }, { key: 'description', label: 'Description' }, { key: 'supplier', label: 'Supplier' }, { key: 'job_id', label: 'Job' }, { key: 'amount', label: 'Amount' }],
+    columns: [{ key: 'expense_date', label: 'Date' }, { key: 'category', label: 'Category' }, { key: 'description', label: 'Description' }, { key: 'supplier', label: 'Supplier' }, { key: 'job_id', label: 'Job' }, { key: 'amount', label: 'Amount' },
+      { key: 'receipt', label: 'Receipt', render: r => r.receipt ? `<button class="btn sm" data-rcv="${r.id}">View</button>` : '' }],
     fields: [
+      { key: 'receipt', label: 'Receipt photo (fills in the details below)', type: 'receipt' },
       { key: 'expense_date', label: 'Date', type: 'date', required: true, default: todayISO },
       { key: 'category', label: 'Category', type: 'select', options: ['Materials', 'Tools & equipment', 'Vehicle & fuel', 'Subcontractors', 'Insurance', 'Software', 'Training & certification', 'Office', 'Other'] },
       { key: 'description', label: 'Description' }, { key: 'supplier', label: 'Supplier' },

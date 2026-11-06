@@ -86,3 +86,8 @@ html[data-theme=light]{--bg:#ffffff;--panel:#f1f7ff;--panel2:#dfedff;--line:rgba
 html[data-theme=light] .msg{background:rgba(198,40,40,.08);border-color:rgba(198,40,40,.35)}
 html[data-theme=light] dialog::backdrop{background:rgba(6,25,58,.45)}
 html[data-theme=navy]{--bg:#04122e;--panel:#0a1f45;--panel2:#10295a;--line:rgba(120,180,255,.18);--line2:rgba(120,180,255,.36);--y:#00e0f5;--yi:#021428;--text:#eaf3ff;--muted:#8fa7cb}
+
+.receipt .btn{cursor:pointer}
+.rcstat{font-size:.85rem;margin-top:8px}
+.rcimg{display:block;max-width:100%;max-height:230px;margin-top:10px;border-radius:6px;border:1px solid var(--line2)}
+.autofilled{outline:2px solid var(--y);outline-offset:1px}

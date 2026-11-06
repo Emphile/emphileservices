@@ -70,6 +70,139 @@
     return s;
   }
 
+  /* ---------- Receipt capture: photo -> small saved copy + OCR (runs in the browser; the photo is not sent to any service) ---------- */
+  const TESS = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  const loaded = {};
+  const loadScript = src => new Promise((res, rej) => {
+    if (loaded[src]) return res();
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => { loaded[src] = true; res(); };
+    s.onerror = () => rej(new Error('Could not load the receipt reader. Check your internet connection.'));
+    document.head.appendChild(s);
+  });
+
+  const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 };
+  const CATEGORIES = [
+    ['Vehicle & fuel', /\b(shell|bp|esso|texaco|jet|gulf|petrol|diesel|unleaded|fuel|halfords|parking|ringgo|toll|dart charge)\b/],
+    ['Materials', /\b(screwfix|toolstation|wickes|b&q|b & q|cef|city electrical|rexel|travis perkins|jewson|electrical wholesale|cable|conduit|trunking|breaker|consumer unit)\b/],
+    ['Tools & equipment', /\b(tool|drill|hilti|dewalt|makita|milwaukee|fluke|megger|ladder|ppe|safety boots|workwear)\b/],
+    ['Insurance', /\b(insurance|premium|aviva|axa|zurich|hiscox)\b/],
+    ['Software', /\b(subscription|licen[cs]e|software|google|microsoft|adobe|zoom|xero|quickbooks)\b/],
+    ['Training & certification', /\b(training|course|exam|niceic|napit|city & guilds|certificate)\b/],
+    ['Office', /\b(stationery|paper|toner|ink|staples|post office|royal mail|printing)\b/],
+  ];
+  const pad2 = n => String(n).padStart(2, '0');
+  const isoOk = (y, m, d) => {
+    if (y < 100) y += 2000;
+    if (y < 2000 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+    const dt = new Date(y, m - 1, d);
+    if (dt.getMonth() !== m - 1) return null;
+    if (dt > new Date(Date.now() + 864e5)) return null;
+    return y + '-' + pad2(m) + '-' + pad2(d);
+  };
+
+  function parseReceipt(text) {
+    const lines = String(text || '').split('\n').map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
+    const out = { date: null, amount: null, supplier: null, category: null };
+
+    // amount: prefer a "total" line, otherwise the largest money value on the receipt
+    const amtRe = /(\d{1,3}(?:,\d{3})+|\d+)[.,](\d{2})\b/g;
+    const amounts = l => [...l.matchAll(amtRe)].map(m => parseFloat(m[1].replace(/,/g, '') + '.' + m[2]));
+    const totalWord = /\b(grand total|total due|total to pay|amount due|balance due|to pay|total|amount paid|card payment|paid by card)\b/i;
+    const skipWord = /sub\s*-?\s*total|\bvat\b|\btax\b|saving|change|cash tendered|points/i;
+    let best = null;
+    lines.forEach((l, i) => {
+      if (!totalWord.test(l) || skipWord.test(l)) return;
+      let v = amounts(l);
+      if (!v.length && lines[i + 1]) v = amounts(lines[i + 1]);
+      v.forEach(x => { if (best === null || x > best) best = x; });
+    });
+    if (best === null) lines.forEach(l => { if (!/change|cash/i.test(l)) amounts(l).forEach(x => { if (best === null || x > best) best = x; }); });
+    out.amount = best;
+
+    // date (UK day-first)
+    for (const l of lines) {
+      let m = l.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+      if (m) { out.date = isoOk(+m[1], +m[2], +m[3]); if (out.date) break; }
+      m = l.match(/\b(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4}|\d{2})\b/);
+      if (m) { out.date = isoOk(+m[3], +m[2], +m[1]) || isoOk(+m[3], +m[1], +m[2]); if (out.date) break; }
+      m = l.match(/\b(\d{1,2})(?:st|nd|rd|th)?[ \-]([A-Za-z]{3,9})[ ,.\-]+(\d{4}|\d{2})\b/);
+      if (m && MONTHS[m[2].slice(0, m[2].toLowerCase().startsWith('sept') ? 4 : 3).toLowerCase()]) {
+        out.date = isoOk(+m[3], MONTHS[m[2].slice(0, m[2].toLowerCase().startsWith('sept') ? 4 : 3).toLowerCase()], +m[1]);
+        if (out.date) break;
+      }
+    }
+
+    // supplier: first line near the top that reads like a name
+    const skipTop = /^(receipt|tax invoice|invoice|welcome|thank|vat|tel|phone|www|http|customer copy|duplicate|copy|order|table|date|time)/i;
+    for (const l of lines.slice(0, 7)) {
+      const letters = (l.match(/[A-Za-z]/g) || []).length;
+      if (letters < 3 || letters < l.replace(/\s/g, '').length * 0.5 || skipTop.test(l)) continue;
+      let name = l.replace(/^[^A-Za-z0-9&]+|[^A-Za-z0-9&.)]+$/g, '');
+      if (name === name.toUpperCase()) name = name.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
+      out.supplier = name.slice(0, 80);
+      break;
+    }
+
+    const lower = String(text || '').toLowerCase();
+    for (const [cat, re] of CATEGORIES) if (re.test(lower)) { out.category = cat; break; }
+    return out;
+  }
+
+  const scaled = (bmp, max, filter) => {
+    const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    const x = c.getContext('2d');
+    if (filter) x.filter = filter;
+    x.drawImage(bmp, 0, 0, c.width, c.height);
+    return c;
+  };
+
+  const receiptHtml = (id, v) => `<div class="receipt" id="${id}" data-value="${esc(v || '')}">
+    <label class="btn" for="${id}_file">&#128247; Take a photo or choose an image</label>
+    <input id="${id}_file" type="file" accept="image/*" capture="environment" hidden>
+    <div class="rcstat muted"></div><img class="rcimg" alt="Receipt photo" hidden></div>`;
+
+  function wireReceipt(rc, dlg) {
+    const input = rc.querySelector('input[type=file]'), stat = rc.querySelector('.rcstat'), img = rc.querySelector('.rcimg');
+    const show = url => { if (url) { img.src = url; img.hidden = false; } };
+    show(rc.dataset.value);
+    const fill = (key, val) => {
+      const n = dlg.querySelector('#f_' + key);
+      if (!n || !val) return false;
+      n.value = val; n.classList.add('autofilled');
+      n.addEventListener('input', () => n.classList.remove('autofilled'), { once: true });
+      return true;
+    };
+    input.onchange = async () => {
+      const file = input.files[0]; if (!file) return;
+      try {
+        stat.textContent = 'Preparing the photo...';
+        const bmp = await createImageBitmap(file);
+        const small = scaled(bmp, 1000).toDataURL('image/jpeg', 0.68);
+        rc.dataset.value = small; show(small);
+        stat.textContent = 'Loading the receipt reader (the first time takes a few seconds)...';
+        await loadScript(TESS);
+        const { data } = await Tesseract.recognize(scaled(bmp, 2000, 'grayscale(1) contrast(1.3)'), 'eng', {
+          logger: m => { if (m.status === 'recognizing text') stat.textContent = 'Reading the receipt... ' + Math.round(m.progress * 100) + '%'; },
+        });
+        const got = parseReceipt(data.text);
+        const found = [];
+        if (fill('expense_date', got.date)) found.push('date');
+        if (fill('amount', got.amount != null ? got.amount.toFixed(2) : '')) found.push('amount');
+        if (fill('supplier', got.supplier)) found.push('supplier');
+        if (fill('category', got.category)) found.push('category');
+        stat.textContent = found.length
+          ? 'Read from the receipt: ' + found.join(', ') + '. Please check these before saving.'
+          : 'Could not read details from this photo. Try a flatter, brighter photo, or type them in.';
+      } catch (e) {
+        stat.textContent = (e && e.message ? e.message : 'Could not read this image.') + ' You can still type the details in.';
+      }
+    };
+  }
+
   /* ---------- Generic resource view ---------- */
   async function mountResource(el, cfg) {
     let rows = [], ctx = {};
@@ -111,7 +244,7 @@
         if (fv && r[cfg.filter.key] !== fv) return false;
         if (!q) return true;
         return JSON.stringify(cfg.columns.map(c => cell(c, r))).toLowerCase().includes(q) ||
-          Object.values(r).some(v => typeof v === 'string' && v.toLowerCase().includes(q));
+          Object.entries(r).some(([k, v]) => k !== 'receipt' && typeof v === 'string' && v.toLowerCase().includes(q));
       });
       el.innerHTML = `
         <div class="bar">
@@ -128,6 +261,10 @@
       qi.oninput = () => { const pos = qi.selectionStart; draw(); const n = el.querySelector('.q'); n.focus(); n.setSelectionRange(pos, pos); };
       const fl = el.querySelector('.flt'); if (fl) fl.onchange = draw;
       el.querySelector('.add').onclick = () => form(null);
+      el.querySelectorAll('[data-rcv]').forEach(b => b.onclick = () => {
+        const r = rows.find(x => x.id === b.dataset.rcv), w = window.open('');
+        if (w && r) { w.document.write('<title>Receipt</title><body style="margin:0;background:#222"><img src="' + r.receipt + '" style="display:block;max-width:100%;margin:auto">'); w.document.close(); }
+      });
       el.querySelectorAll('tr[data-id]').forEach(tr => {
         const r = rows.find(x => x.id === tr.dataset.id);
         tr.querySelector('[data-e]').onclick = () => form(r);
@@ -145,6 +282,7 @@
 
     function inputFor(f, v) {
       const id = 'f_' + f.key, req = f.required ? 'required' : '';
+      if (f.type === 'receipt') return receiptHtml(id, v);
       if (f.type === 'textarea') return `<textarea id="${id}" ${req}>${esc(v)}</textarea>`;
       if (f.type === 'checkbox') return `<select id="${id}"><option value="true" ${v !== false ? 'selected' : ''}>Yes</option><option value="false" ${v === false ? 'selected' : ''}>No</option></select>`;
       if (f.type === 'select') return `<select id="${id}" ${req}><option value=""></option>${f.options.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
@@ -166,10 +304,12 @@
       }
       const dlg = document.createElement('dialog');
       dlg.innerHTML = `<form method="dialog" novalidate><h2>${row ? 'Edit' : 'Add'} ${esc(cfg.single)}</h2><div class="msg" hidden></div>
-        <div class="fgrid">${cfg.fields.map(f => `<div class="${f.full || f.type === 'textarea' || f.type === 'lines' ? 'full' : ''}"><label for="f_${f.key}">${esc(f.label)}${f.required ? ' *' : ''}</label>${inputFor(f, rec[f.key])}</div>`).join('')}</div>
+        <div class="fgrid">${cfg.fields.map(f => `<div class="${f.full || f.type === 'textarea' || f.type === 'lines' || f.type === 'receipt' ? 'full' : ''}"><label for="f_${f.key}">${esc(f.label)}${f.required ? ' *' : ''}</label>${inputFor(f, rec[f.key])}</div>`).join('')}</div>
         <div class="dfoot"><button type="button" class="btn" data-x>Cancel</button><button class="btn y" type="submit">Save</button></div></form>`;
       document.body.appendChild(dlg);
       dlg.showModal();
+      const rcBox = dlg.querySelector('.receipt');
+      if (rcBox) wireReceipt(rcBox, dlg);
       const msg = dlg.querySelector('.msg');
       const lines = dlg.querySelector('.lines');
       if (lines) {
@@ -190,6 +330,7 @@
         const out = {};
         for (const f of cfg.fields) {
           const node = dlg.querySelector('#f_' + f.key);
+          if (f.type === 'receipt') { out[f.key] = node.dataset.value || null; continue; }
           if (f.type === 'lines') {
             out[f.key] = [...node.querySelectorAll('.row')].map(r => ({ d: r.querySelector('[data-d]').value.trim(), q: +r.querySelector('[data-q]').value || 0, p: +r.querySelector('[data-p]').value || 0 })).filter(i => i.d || i.p);
           } else if (f.type === 'checkbox') out[f.key] = node.value === 'true';
@@ -240,5 +381,5 @@ ${s.document_terms ? `<p class="m" style="margin-top:24px;font-size:12px">${esc(
     w.document.close();
   }
 
-  window.Emphile = { db, esc, money, fdate, todayISO, guard, shell, tabs, mountResource, printDoc, nextNumber, docTotals, getSettings };
+  window.Emphile = { parseReceipt, db, esc, money, fdate, todayISO, guard, shell, tabs, mountResource, printDoc, nextNumber, docTotals, getSettings };
 })();
