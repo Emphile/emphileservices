@@ -7,6 +7,7 @@
 <meta name="description" content="Emphile Engineering Services provides electrical inspection (EICR), installation, industrial electrical works, energy efficiency and maintenance across Wales and South West England.">
 <link rel="icon" href="assets/logo.png" type="image/png">
 <meta name="theme-color" content="#0064cd">
+<script>try{var t=localStorage.getItem('emphile_site_theme');if(t==='dark'||t==='navy')document.documentElement.setAttribute('data-site',t)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
@@ -19,6 +20,15 @@
     --text:#06193a; --muted:#44587a;
     --r:3px; --max:1160px;
   }
+  /* Website themes: chosen in the portal under Settings */
+  html[data-site=dark]{--bg:#0a1220;--panel:#111c30;--panel-2:#182742;--line:rgba(120,180,255,.16);--line-2:rgba(120,180,255,.36);--yellow:#2fb8ff;--yellow-ink:#03132b;--text:#eaf3ff;--muted:#9bb0d0}
+  html[data-site=navy]{--bg:#04122e;--panel:#0a1f45;--panel-2:#10295a;--line:rgba(120,180,255,.18);--line-2:rgba(120,180,255,.36);--yellow:#00e0f5;--yellow-ink:#021428;--text:#eaf3ff;--muted:#8fa7cb}
+  html[data-site=dark] header{background:rgba(10,18,32,.92)}
+  html[data-site=navy] header{background:rgba(4,18,46,.92)}
+  html[data-site=dark] .card-hero,html[data-site=navy] .card-hero{background:rgba(10,24,52,.92)}
+  html[data-site=dark] .btn-y:hover,html[data-site=navy] .btn-y:hover{filter:brightness(1.12)}
+  html[data-site=dark] .band,html[data-site=navy] .band{color:#fff}
+  html[data-site=dark] .band .btn,html[data-site=navy] .band .btn{background:#fff;color:#0064cd}
   html{scroll-behavior:smooth;scroll-padding-top:90px}
   body{background:var(--bg);color:var(--text);font:400 16px/1.65 'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
@@ -358,6 +368,16 @@
 <script src="db.js"></script>
 <script>
   document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // Theme chosen in the portal (Settings). Cached so repeat visits do not flash.
+  if (window.EmphileDB && EmphileDB.configured) {
+    EmphileDB.get('site', 'theme').then(d => {
+      const t = d && (d.value === 'dark' || d.value === 'navy') ? d.value : 'light';
+      if (t === 'light') document.documentElement.removeAttribute('data-site');
+      else document.documentElement.setAttribute('data-site', t);
+      try { localStorage.setItem('emphile_site_theme', t); } catch (e) { /* ignore */ }
+    }).catch(() => { /* keep cached/default theme */ });
+  }
 
   const burger = document.querySelector('.burger'), menu = document.querySelector('nav ul');
   burger.addEventListener('click', () => {

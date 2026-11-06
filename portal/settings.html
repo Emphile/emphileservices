@@ -37,6 +37,15 @@
           <b>${esc(t.name)}</b><small>${esc(t.note)}</small></button>`).join('')}
       </div>
     </div>
+    <div class="box"><h2>Website theme</h2>
+      <p class="muted" style="margin-bottom:16px">Choose how the public website looks to visitors. It applies to everyone and updates within a minute.</p>
+      <div class="themes" role="group" aria-label="Website theme">
+        ${THEMES.map(t => `<button type="button" class="theme" data-s="${t.id}" aria-pressed="false">
+          <div class="sw" style="background:${t.bg}"><i style="background:${t.side}"></i><span><em style="background:${t.accent}"></em><em style="background:${t.line}"></em><em style="background:${t.line}"></em></span></div>
+          <b>${esc(t.name)}</b></button>`).join('')}
+      </div>
+      <div class="rcstat muted" id="sitemsg" role="status"></div>
+    </div>
     <div class="box"><h2>Account</h2>
       <div class="row2"><div><div class="muted" style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase">Signed in as</div><b>${esc(session.user.email)}</b></div>
       <a class="btn" href="index.html">Business details &amp; invoice terms</a></div>
@@ -44,6 +53,16 @@
   const mark = () => c.querySelectorAll('.theme').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === EmphileTheme.get()));
   c.querySelectorAll('.theme').forEach(b => b.onclick = () => { EmphileTheme.set(b.dataset.t); mark(); });
   mark();
+
+  // Public website theme, stored in Firestore (site/theme) and read by the public site.
+  const sm = c.querySelector('#sitemsg');
+  const markSite = v => c.querySelectorAll('[data-s]').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === v));
+  try { const d = await E.db.get('site', 'theme'); markSite(d && d.value || 'light'); } catch (e) { markSite('light'); }
+  c.querySelectorAll('[data-s]').forEach(b => b.onclick = async () => {
+    sm.textContent = 'Saving...';
+    try { await E.db.set('site', 'theme', { value: b.dataset.s }); markSite(b.dataset.s); sm.textContent = 'Saved. The website will use this theme.'; }
+    catch (e) { sm.textContent = 'Could not save: ' + e.message + ' (publish the updated firestore.rules in Firebase first).'; }
+  });
 })();
 </script>
 </body>

@@ -27,6 +27,7 @@
       const ref = await fs.collection(table).add(row);
       return { ...row, id: ref.id };
     },
+    async get(table, id) { const d = await fs.collection(table).doc(id).get(); return d.exists ? { ...d.data(), id: d.id } : null; },
     update: (table, id, data) => fs.collection(table).doc(id).update(data),
     remove: (table, id) => fs.collection(table).doc(id).delete(),
     set: (table, id, data) => fs.collection(table).doc(id).set(data, { merge: true }),

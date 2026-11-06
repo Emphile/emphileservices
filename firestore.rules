@@ -26,6 +26,12 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // The public website may read which theme to show; only admins can change it.
+    match /site/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /{collection}/{id} {
       allow read, write: if isAdmin()
         && collection in ['clients', 'staff', 'jobs', 'quotes', 'invoices', 'payments',
