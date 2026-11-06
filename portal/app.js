@@ -250,6 +250,7 @@
         <div class="bar">
           <input class="q grow" type="search" placeholder="Search ${esc(cfg.title.toLowerCase())}" value="${esc(q)}" aria-label="Search">
           ${cfg.filter ? `<select class="flt" aria-label="Filter"><option value="">All ${esc(cfg.filter.label)}</option>${cfg.filter.options.map(o => `<option ${o === fv ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>` : ''}
+          <button class="btn prt" type="button">Print report</button>
           <button class="btn y add">+ Add ${esc(cfg.single)}</button>
         </div>
         <div class="tw">${shown.length ? `<table><thead><tr>${cfg.columns.map(c => `<th>${esc(c.label)}</th>`).join('')}<th></th></tr></thead><tbody>
@@ -261,6 +262,16 @@
       qi.oninput = () => { const pos = qi.selectionStart; draw(); const n = el.querySelector('.q'); n.focus(); n.setSelectionRange(pos, pos); };
       const fl = el.querySelector('.flt'); if (fl) fl.onchange = draw;
       el.querySelector('.add').onclick = () => form(null);
+      el.querySelector('.prt').onclick = () => {
+        const cols = cfg.columns.filter(c => c.key !== 'receipt');
+        const sums = cols.map(c => {
+          const f = cfg.fields.find(x => x.key === c.key) || {};
+          return f.type === 'money' && !c.render ? shown.reduce((s, r) => s + (+r[c.key] || 0), 0) : null;
+        });
+        const filt = [fv && `${cfg.filter.label}: ${fv}`, q && `search: "${q}"`].filter(Boolean).join(', ');
+        printReport(cfg.title, cols.map(c => c.label), shown.map(r => cols.map(c => cell(c, r))),
+          sums.map(s => s == null ? '' : money(s)), filt);
+      };
       el.querySelectorAll('[data-rcv]').forEach(b => b.onclick = () => {
         const r = rows.find(x => x.id === b.dataset.rcv), w = window.open('');
         if (w && r) { w.document.write('<title>Receipt</title><body style="margin:0;background:#222"><img src="' + r.receipt + '" style="display:block;max-width:100%;margin:auto">'); w.document.close(); }
@@ -381,5 +392,41 @@ ${s.document_terms ? `<p class="m" style="margin-top:24px;font-size:12px">${esc(
     w.document.close();
   }
 
-  window.Emphile = { parseReceipt, db, esc, money, fdate, todayISO, guard, shell, tabs, mountResource, printDoc, nextNumber, docTotals, getSettings };
+  /* ---------- Print view for any list (report) ---------- */
+  async function printReport(title, heads, rows, totals, filt) {
+    const s = await getSettings();
+    const w = window.open('', '_blank');
+    if (!w) { alert('Allow pop-ups to print.'); return; }
+    const hasTot = totals.some(Boolean);
+    w.document.write(`<!doctype html><meta charset="utf-8"><title>${esc(title)} report</title>
+<style>body{font:12px/1.4 Arial,sans-serif;color:#111;margin:28px}h1{margin:0;font-size:22px}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{padding:6px 8px;border-bottom:1px solid #ccc;text-align:left;vertical-align:top}th{background:#eee;font-size:11px;text-transform:uppercase;letter-spacing:.04em}tfoot td{font-weight:bold;border-top:2px solid #111}.m{color:#555}.pill{font-weight:bold}tr{page-break-inside:avoid}thead{display:table-header-group}@media print{body{margin:12mm}}</style>
+<h1>${esc(title)} report</h1>
+<div class="m">${esc(s.business_name || 'Emphile Engineering Services Ltd')} &middot; Generated ${esc(new Date().toLocaleString('en-GB'))}${filt ? ' &middot; ' + esc(filt) : ''} &middot; ${rows.length} record${rows.length === 1 ? '' : 's'}</div>
+<table><thead><tr>${heads.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>
+${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${heads.length}">No records.</td></tr>`}</tbody>
+${hasTot ? `<tfoot><tr>${totals.map((t, i) => `<td>${i === 0 && !t ? 'Totals' : t}</td>`).join('')}</tr></tfoot>` : ''}</table>
+<script>onload=()=>print()<\/script>`);
+    w.document.close();
+  }
+
+  /* ---------- Print view for one inspection / certificate record ---------- */
+  async function printInspection(row, lookups) {
+    const s = await getSettings();
+    const by = (t, id) => (lookups[t] || []).find(x => x.id === id) || {};
+    const client = by('clients', row.client_id), eng = by('staff', row.engineer_id);
+    const rowH = (k, v) => `<tr><th style="width:32%">${esc(k)}</th><td>${esc(v || '')}</td></tr>`;
+    const w = window.open('', '_blank');
+    if (!w) { alert('Allow pop-ups to print.'); return; }
+    w.document.write(`<!doctype html><meta charset="utf-8"><title>${esc(row.type || 'Inspection')} ${esc(row.certificate_no || '')}</title>
+<style>body{font:14px/1.5 Arial,sans-serif;color:#111;margin:40px;max-width:780px}h1{margin:0;font-size:24px}table{width:100%;border-collapse:collapse;margin:22px 0}th,td{padding:8px;border:1px solid #ccc;text-align:left;vertical-align:top}th{background:#eee}.m{color:#555;white-space:pre-line}.sig{display:flex;gap:40px;margin-top:50px}.sig div{flex:1;border-top:1px solid #111;padding-top:6px}</style>
+<h1>${esc(s.business_name || 'Emphile Engineering Services Ltd')}</h1><div class="m">${esc(s.business_address || '')}</div>
+<h1 style="margin-top:26px">${esc(row.type || 'Inspection report')}</h1>
+<table>${rowH('Certificate number', row.certificate_no)}${rowH('Client', client.name)}${rowH('Property', row.property_address)}${rowH('Inspection date', fdate(row.inspection_date))}${rowH('Result', row.result)}${rowH('Next inspection due', fdate(row.next_due))}${rowH('Engineer', eng.full_name)}</table>
+<p><b>Observations / notes</b></p><p class="m">${esc(row.notes || 'None recorded.')}</p>
+<div class="sig"><div>Engineer signature</div><div>Date</div></div>
+<script>onload=()=>print()<\/script>`);
+    w.document.close();
+  }
+
+  window.Emphile = { printReport, printInspection, parseReceipt, db, esc, money, fdate, todayISO, guard, shell, tabs, mountResource, printDoc, nextNumber, docTotals, getSettings };
 })();

@@ -135,6 +135,7 @@
         },
       },
     ],
+    actions: [{ label: 'Print', run: (r, api) => E.printInspection(r, api.lookups) }],
     fields: [
       { key: 'client_id', label: 'Client', lookup: clientLookup }, { key: 'job_id', label: 'Job', lookup: jobLookup },
       { key: 'property_address', label: 'Property address', full: true },
