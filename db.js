@@ -28,6 +28,40 @@
       return { ...row, id: ref.id };
     },
     async get(table, id) { const d = await fs.collection(table).doc(id).get(); return d.exists ? { ...d.data(), id: d.id } : null; },
+    // Query with one equality filter (needed where rules only allow reading matching documents).
+    async listWhere(table, field, value) {
+      const snap = await fs.collection(table).where(field, '==', value).get();
+      return snap.docs.map(x => ({ ...x.data(), id: x.id }));
+    },
+    // Files are stored as <=900 KB pieces in material_files (Firestore documents are capped at 1 MiB).
+    async uploadFile(materialId, file, progress) {
+      const SIZE = 900000, n = Math.ceil(file.size / SIZE);
+      for (let i = 0; i < n; i++) {
+        const u8 = new Uint8Array(await file.slice(i * SIZE, (i + 1) * SIZE).arrayBuffer());
+        await fs.collection('material_files').doc(materialId + '_' + i).set({ material_id: materialId, n: i, data: firebase.firestore.Blob.fromUint8Array(u8) });
+        if (progress) progress(i + 1, n);
+      }
+      return n;
+    },
+    async readFile(m, progress) {
+      const parts = new Array(m.chunks);
+      let done = 0, next = 0;
+      const worker = async () => {
+        while (next < m.chunks) {
+          const i = next++;
+          const d = await fs.collection('material_files').doc(m.id + '_' + i).get();
+          if (!d.exists) throw new Error('Part ' + (i + 1) + ' of the file is missing.');
+          parts[i] = d.data().data.toUint8Array();
+          if (progress) progress(++done, m.chunks);
+        }
+      };
+      await Promise.all([worker(), worker(), worker(), worker()]);
+      return new Blob(parts, { type: m.mime || 'application/pdf' });
+    },
+    async removeFile(materialId, chunks) {
+      for (let i = 0; i < chunks; i++) await fs.collection('material_files').doc(materialId + '_' + i).delete();
+    },
+    signUp: (email, password) => auth.createUserWithEmailAndPassword(email, password),
     update: (table, id, data) => fs.collection(table).doc(id).update(data),
     remove: (table, id) => fs.collection(table).doc(id).delete(),
     set: (table, id, data) => fs.collection(table).doc(id).set(data, { merge: true }),

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Learning | Emphile Back Office</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="portal.css">
+<script src="theme.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="../config.js"></script>
+<script src="../db.js"></script>
+<script src="app.js"></script>
+<script src="resources.js"></script>
+<script>
+(async () => {
+  const E = Emphile, { esc, db } = E;
+  const session = await E.guard(); if (!session) return;
+  const c = E.shell('learning.html', 'Learning library', session);
+  const CATS = ['Electrical controls', 'Wiring and standards', 'Testing and inspection', 'Health and safety', 'Other'];
+  const mb = n => (n / 1048576).toFixed(1) + ' MB';
+  let tab = 'materials';
+
+  c.innerHTML = `<div class="tabs"><button data-t="materials">Materials</button><button data-t="learners">Learners</button></div><div id="pane"></div>`;
+  const pane = c.querySelector('#pane');
+  c.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.t; draw(); });
+  const draw = () => {
+    c.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
+    tab === 'materials' ? materials() : learners();
+  };
+
+  /* ---------------- Materials ---------------- */
+  async function materials() {
+    let rows = [];
+    try { rows = await db.list('materials', { order: 'created_at' }); }
+    catch (e) { pane.innerHTML = `<div class="msg">${esc(e.message)} (publish the updated firestore.rules in Firebase first)</div>`; return; }
+    pane.innerHTML = `
+      <div class="box"><h2>Add learning material</h2>
+        <p class="muted" style="margin-bottom:14px">New material is saved as <b>Pending</b>. Learners cannot see it until you approve it below.</p>
+        <div class="fgrid">
+          <div><label for="m_t">Title</label><input id="m_t"></div>
+          <div><label for="m_c">Category</label><select id="m_c">${CATS.map(x => `<option>${esc(x)}</option>`).join('')}</select></div>
+          <div class="full"><label for="m_d">Description</label><textarea id="m_d"></textarea></div>
+          <div class="full"><label for="m_f">PDF file</label><input id="m_f" type="file" accept="application/pdf,.pdf"></div>
+        </div>
+        <div class="dfoot" style="justify-content:space-between;align-items:center"><span class="rcstat muted" id="m_s" role="status"></span><button class="btn y" id="m_go">Upload for approval</button></div>
+      </div>
+      <div class="tw">${rows.length ? `<table><thead><tr><th>Title</th><th>Category</th><th>File</th><th>Status</th><th></th></tr></thead><tbody>
+        ${rows.map(r => `<tr data-id="${r.id}"><td><b>${esc(r.title)}</b><div class="muted" style="font-size:.82rem">${esc(r.description || '')}</div></td><td>${esc(r.category || '')}</td>
+          <td>${esc(r.filename || '')}<div class="muted" style="font-size:.8rem">${mb(r.size || 0)}</div></td>
+          <td><span class="pill ${r.status === 'Approved' ? 'g' : r.status === 'Rejected' ? 'r' : 'y'}">${esc(r.status)}</span></td>
+          <td class="act"><button class="btn sm" data-v>View</button>
+            ${r.status === 'Approved' ? '<button class="btn sm" data-s="Pending">Withdraw</button>' : '<button class="btn sm y" data-s="Approved">Approve</button>'}
+            ${r.status === 'Pending' ? '<button class="btn sm d" data-s="Rejected">Reject</button>' : ''}
+            <button class="btn sm d" data-d>Delete</button></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No learning material yet.</div>'}</div>`;
+
+    const st = pane.querySelector('#m_s');
+    pane.querySelector('#m_go').onclick = async ev => {
+      const title = pane.querySelector('#m_t').value.trim(), file = pane.querySelector('#m_f').files[0];
+      if (!title) { st.textContent = 'Enter a title.'; return; }
+      if (!file) { st.textContent = 'Choose a PDF file.'; return; }
+      if (file.size > 150 * 1048576) { st.textContent = 'That file is over 150 MB. Compress the PDF first.'; return; }
+      ev.target.disabled = true; st.textContent = 'Uploading... 0%';
+      const id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)).replace(/-/g, '');
+      try {
+        const n = await db.uploadFile(id, file, (i, t) => { st.textContent = `Uploading... ${Math.round(i / t * 100)}%`; });
+        await db.set('materials', id, {
+          title, category: pane.querySelector('#m_c').value, description: pane.querySelector('#m_d').value.trim(),
+          filename: file.name, size: file.size, mime: file.type || 'application/pdf', chunks: n,
+          status: 'Pending', created_at: new Date().toISOString(), added_by: session.user.email,
+        });
+        materials();
+      } catch (e) {
+        st.textContent = 'Upload failed: ' + e.message; ev.target.disabled = false;
+        try { await db.removeFile(id, Math.ceil(file.size / 900000)); } catch (x) { /* ignore */ }
+      }
+    };
+    pane.querySelectorAll('tr[data-id]').forEach(tr => {
+      const r = rows.find(x => x.id === tr.dataset.id);
+      tr.querySelector('[data-v]').onclick = async ev => {
+        const w = window.open('', '_blank'); const b = ev.target; b.disabled = true;
+        try {
+          const blob = await db.readFile(r, (i, t) => { b.textContent = Math.round(i / t * 100) + '%'; });
+          const url = URL.createObjectURL(blob); if (w) w.location = url; else location.href = url;
+        } catch (e) { if (w) w.close(); alert(e.message); }
+        b.textContent = 'View'; b.disabled = false;
+      };
+      tr.querySelectorAll('[data-s]').forEach(b => b.onclick = async () => {
+        const s = b.dataset.s;
+        const data = { status: s }; if (s === 'Approved') { data.approved_by = session.user.email; data.approved_at = new Date().toISOString(); }
+        try { await db.update('materials', r.id, data); materials(); } catch (e) { alert(e.message); }
+      });
+      tr.querySelector('[data-d]').onclick = async () => {
+        if (!confirm(`Delete "${r.title}" and its file? This cannot be undone.`)) return;
+        try { await db.update('materials', r.id, { status: 'Rejected' }); await db.removeFile(r.id, r.chunks || 0); await db.remove('materials', r.id); materials(); }
+        catch (e) { alert(e.message); }
+      };
+    });
+  }
+
+  /* ---------------- Learners ---------------- */
+  async function learners() {
+    let rows = [];
+    try { rows = await db.list('learners', { order: 'created_at' }); }
+    catch (e) { pane.innerHTML = `<div class="msg">${esc(e.message)}</div>`; return; }
+    pane.innerHTML = `<p class="muted" style="margin-bottom:14px">People register at <b>/learn/</b> on the website and wait here until you approve them. Only approved learners can open approved material.</p>
+      <div class="tw">${rows.length ? `<table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody>
+      ${rows.map(r => `<tr data-id="${r.id}"><td>${esc(r.name)}</td><td>${esc(r.email)}</td>
+        <td><span class="pill ${r.status === 'Approved' ? 'g' : r.status === 'Suspended' ? 'r' : 'y'}">${esc(r.status)}</span></td>
+        <td class="act">${r.status === 'Approved' ? '<button class="btn sm d" data-s="Suspended">Suspend</button>' : '<button class="btn sm y" data-s="Approved">Approve</button>'}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">No learners have registered yet.</div>'}</div>`;
+    pane.querySelectorAll('tr[data-id]').forEach(tr => tr.querySelectorAll('[data-s]').forEach(b => b.onclick = async () => {
+      try { await db.update('learners', tr.dataset.id, { status: b.dataset.s }); learners(); } catch (e) { alert(e.message); }
+    }));
+  }
+
+  draw();
+})();
+</script>
+</body>
+</html>

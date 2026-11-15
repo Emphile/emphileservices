@@ -26,6 +26,37 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // ---- Learning library -------------------------------------------------
+    // A learner is a signed-in user with a learners/<uid> document the admin has set to Approved.
+    function isLearner() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/learners/$(request.auth.uid))
+        && get(/databases/$(database)/documents/learners/$(request.auth.uid)).data.status == 'Approved';
+    }
+
+    match /learners/{uid} {
+      // Anyone signed in may request access for themselves; it starts as Pending.
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'email', 'status', 'created_at'])
+        && request.resource.data.status == 'Pending'
+        && request.resource.data.name is string && request.resource.data.name.size() < 200;
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
+      allow update, delete: if isAdmin();
+    }
+
+    // Learners only ever see materials the admin has approved.
+    match /materials/{id} {
+      allow read: if isAdmin() || (isLearner() && resource.data.status == 'Approved');
+      allow write: if isAdmin();
+    }
+
+    // The file itself, stored in pieces. Readable only while its material is approved.
+    match /material_files/{id} {
+      allow read: if isAdmin()
+        || (isLearner() && get(/databases/$(database)/documents/materials/$(resource.data.material_id)).data.status == 'Approved');
+      allow write: if isAdmin();
+    }
+
     // The public website may read which theme to show; only admins can change it.
     match /site/{id} {
       allow read: if true;

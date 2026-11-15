@@ -9,7 +9,7 @@
 
   const NAV = [
     ['index.html', 'Dashboard'], ['crm.html', 'CRM'], ['jobs.html', 'Jobs & billing'],
-    ['inspections.html', 'Inspections'], ['staff.html', 'Staff & finance'], ['settings.html', 'Settings'],
+    ['inspections.html', 'Inspections'], ['staff.html', 'Staff & finance'], ['learning.html', 'Learning'], ['settings.html', 'Settings'],
   ];
 
   function notice(title, text) {

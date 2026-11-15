@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Learning Library | Emphile Engineering Services</title>
+<link rel="icon" href="../assets/logo.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../portal/portal.css">
+<script src="../portal/theme.js"></script>
+<style>
+  .wrapl{max-width:860px;margin:0 auto;padding:28px 20px 60px}
+  .hd{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+  .hd img{height:52px;background:#fff;border-radius:8px;padding:4px}
+  .item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:14px;display:flex;gap:16px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+  .item h3{font-size:1.5rem;margin-bottom:2px}
+  .ok{color:var(--green)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:700px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrapl" id="root"><p class="muted">Loading...</p></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="../config.js"></script>
+<script src="../db.js"></script>
+<script>
+(async () => {
+  const root = document.getElementById('root'), db = window.EmphileDB;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const mb = n => (n / 1048576).toFixed(1) + ' MB';
+  const head = who => `<div class="hd"><a href="../"><img src="../assets/logo.png" alt="Emphile Engineering Services"></a>
+    <div style="text-align:right"><h1 style="font-size:2rem">Learning Library</h1>${who ? `<div class="muted" style="font-size:.85rem">${esc(who)} · <a href="#" id="out" style="text-decoration:underline">Sign out</a></div>` : ''}</div></div>`;
+  const wireOut = () => { const o = document.getElementById('out'); if (o) o.onclick = async e => { e.preventDefault(); await db.signOut(); start(); }; };
+  const note = (t, cls) => `<div class="box"><p class="${cls || ''}">${t}</p></div>`;
+
+  if (!db || !db.configured) { root.innerHTML = head() + note('The learning library is not available right now.'); return; }
+
+  function loginView(msg) {
+    root.innerHTML = head() + (msg ? `<div class="msg">${esc(msg)}</div>` : '') + `
+      <div class="two">
+        <form class="box" id="fi"><h2>Sign in</h2><div class="fgrid">
+          <div class="full"><label for="ie">Email</label><input id="ie" type="email" autocomplete="email" required></div>
+          <div class="full"><label for="ip">Password</label><input id="ip" type="password" autocomplete="current-password" required></div></div>
+          <div class="dfoot"><button class="btn y" type="submit">Sign in</button></div></form>
+        <form class="box" id="fr"><h2>Request access</h2><div class="fgrid">
+          <div class="full"><label for="rn">Full name</label><input id="rn" autocomplete="name" required></div>
+          <div class="full"><label for="re">Email</label><input id="re" type="email" autocomplete="email" required></div>
+          <div class="full"><label for="rp">Password (6+ characters)</label><input id="rp" type="password" minlength="6" autocomplete="new-password" required></div></div>
+          <p class="muted" style="margin-top:10px;font-size:.85rem">An administrator approves each new learner before any material can be opened.</p>
+          <div class="dfoot"><button class="btn y" type="submit">Request access</button></div></form>
+      </div>`;
+    document.getElementById('fi').onsubmit = async e => {
+      e.preventDefault();
+      try { await db.signIn(document.getElementById('ie').value.trim(), document.getElementById('ip').value); start(); }
+      catch (x) { loginView('Could not sign in: check your email and password.'); }
+    };
+    document.getElementById('fr').onsubmit = async e => {
+      e.preventDefault();
+      const name = document.getElementById('rn').value.trim(), email = document.getElementById('re').value.trim();
+      try {
+        const cred = await db.signUp(email, document.getElementById('rp').value);
+        await db.set('learners', cred.user.uid, { name, email, status: 'Pending', created_at: new Date().toISOString() });
+        start();
+      } catch (x) { loginView(x.code === 'auth/email-already-in-use' ? 'That email already has an account. Sign in instead.' : 'Could not create the account: ' + x.message); }
+    };
+  }
+
+  async function start() {
+    const u = await db.user();
+    if (!u) { loginView(); return; }
+    let me = null;
+    try { me = await db.get('learners', u.uid); } catch (e) { /* treated as no profile */ }
+    if (!me) {
+      root.innerHTML = head(u.email) + note('This account is not registered as a learner. Staff accounts use the staff portal.') ; wireOut(); return;
+    }
+    if (me.status !== 'Approved') {
+      root.innerHTML = head(u.email) + note(me.status === 'Suspended' ? 'Your access has been suspended. Please contact Emphile Engineering Services.'
+        : 'Thanks, <b>' + esc(me.name) + '</b>. Your request is waiting for approval. Check back later.'); wireOut(); return;
+    }
+    let list = [];
+    try { list = await db.listWhere('materials', 'status', 'Approved'); } catch (e) { root.innerHTML = head(u.email) + `<div class="msg">${esc(e.message)}</div>`; wireOut(); return; }
+    list.sort((a, b) => (a.category || '').localeCompare(b.category || '') || a.title.localeCompare(b.title));
+    root.innerHTML = head(u.email) + (list.length ? list.map(m => `<div class="item" data-id="${m.id}"><div><h3>${esc(m.title)}</h3>
+      <div class="muted" style="font-size:.85rem">${esc(m.category || '')} · PDF · ${mb(m.size || 0)}</div><p style="margin-top:6px">${esc(m.description || '')}</p></div>
+      <button class="btn y" data-o>Open</button></div>`).join('') : note('No approved learning material is available yet.'));
+    wireOut();
+    root.querySelectorAll('.item').forEach(el => el.querySelector('[data-o]').onclick = async ev => {
+      const m = list.find(x => x.id === el.dataset.id), b = ev.target, w = window.open('', '_blank'); b.disabled = true;
+      try {
+        const blob = await db.readFile(m, (i, t) => { b.textContent = Math.round(i / t * 100) + '%'; });
+        const url = URL.createObjectURL(blob); if (w) w.location = url; else location.href = url;
+      } catch (e) { if (w) w.close(); alert('Could not open this file: ' + e.message); }
+      b.textContent = 'Open'; b.disabled = false;
+    });
+  }
+  start();
+})();
+</script>
+</body>
+</html>
