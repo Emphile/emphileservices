@@ -39,6 +39,12 @@
   h2{font-size:clamp(2.4rem,5vw,3.6rem);margin-bottom:16px}
   .lead{color:var(--muted);max-width:620px;font-size:1.05rem}
   section{padding:96px 0}
+  .work{background:var(--panel)}
+  .work .lead2{color:var(--muted);max-width:640px}
+  .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:32px}
+  .gal a{display:block;overflow:hidden;border-radius:6px;border:1px solid var(--line);aspect-ratio:4/5;background:var(--panel-2)}
+  .gal img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+  .gal a:hover img{transform:scale(1.05)}
 
   .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:var(--r);font-weight:700;font-size:.95rem;border:1.5px solid transparent;cursor:pointer;transition:transform .15s,background .15s,border-color .15s;font-family:inherit}
   .btn:hover{transform:translate(-1px,-2px)}
@@ -211,6 +217,7 @@
       <ul>
         <li><a class="l" href="#lifecycle">Services</a></li>
         <li><a class="l" href="#about">About</a></li>
+        <li><a class="l" href="#work">Our work</a></li>
         <li><a class="l" href="#process">Process</a></li>
         <li><a class="l" href="#contact">Contact</a></li>
         <li><a class="btn btn-y" href="#contact">Book an inspection</a></li>
@@ -293,6 +300,21 @@
         <div><dt>Hours</dt><dd>Mon–Fri 8am–6pm · Emergency 24/7</dd></div>
         <div><dt>Sectors</dt><dd>Commercial · Residential · Industrial</dd></div>
       </dl>
+    </div>
+  </section>
+
+  <section id="work" class="work">
+    <div class="wrap">
+      <p class="eyebrow">Our work</p>
+      <h2>On site, doing the job properly</h2>
+      <p class="lead2">Cable containment and cable installation on live construction projects.</p>
+      <div class="gal">
+        <a href="picture-library/team-on-site.jpg" target="_blank" rel="noopener"><img loading="lazy" src="picture-library/team-on-site.jpg" alt="The Emphile Engineering Services team on site"></a>
+        <a href="picture-library/site-walkdown.jpg" target="_blank" rel="noopener"><img loading="lazy" src="picture-library/site-walkdown.jpg" alt="Emphile engineer on a construction site"></a>
+        <a href="picture-library/cable-tray-run.jpg" target="_blank" rel="noopener"><img loading="lazy" src="picture-library/cable-tray-run.jpg" alt="Engineer installing clamped power cables on galvanised cable tray"></a>
+        <a href="picture-library/cable-tray-cover.jpg" target="_blank" rel="noopener"><img loading="lazy" src="picture-library/cable-tray-cover.jpg" alt="Covered cable tray above clamped cables with an earth conductor"></a>
+        <a href="picture-library/cable-containment-ceiling.jpg" target="_blank" rel="noopener"><img loading="lazy" src="picture-library/cable-containment-ceiling.jpg" alt="Overhead cable tray and containment"></a>
+      </div>
     </div>
   </section>
 
