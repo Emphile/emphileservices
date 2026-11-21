@@ -62,8 +62,9 @@
   footer .logo{display:inline-flex;background:#fff;padding:8px 14px;border-radius:4px;box-shadow:4px 4px 0 #00e8f8}
   footer .logo img{height:72px}
   nav ul{display:flex;gap:30px;list-style:none;align-items:center}
-  nav a.l{font-size:.9rem;color:var(--muted);transition:color .15s}
-  nav a.l:hover{color:var(--text)}
+  nav a.l{font-size:.9rem;font-weight:500;color:#000;transition:color .15s}
+  nav a.l:hover{color:var(--yellow)}
+  html[data-site=dark] nav a.l,html[data-site=navy] nav a.l{color:var(--text)}
   .nav .btn{padding:10px 18px;font-size:.85rem}
   .burger{display:none;background:none;border:1px solid var(--line-2);color:var(--text);width:42px;height:42px;border-radius:8px;font-size:1.2rem;cursor:pointer}
 

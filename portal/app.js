@@ -13,7 +13,7 @@
   ];
 
   function notice(title, text) {
-    document.body.innerHTML = `<div class="center"><div class="login"><h1>${esc(title)}</h1><p class="muted">${text}</p><a class="btn" href="login.html">Back to sign in</a></div></div>`;
+    document.body.innerHTML = `<div class="center"><div class="login"><h1>${esc(title)}</h1><p class="muted">${text}</p><a class="btn" href="login.html">Back to sign in</a><p class="muted" style="font-size:.85rem">Are you a learner? Use the <a href="../learn/" style="text-decoration:underline">learner login</a> instead.</p></div></div>`;
   }
 
   async function guard() {
